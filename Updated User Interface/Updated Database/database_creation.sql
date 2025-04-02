@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS works (
     work_type_id INTEGER PRIMARY KEY AUTOINCREMENT,
     work_type_name TEXT NOT NULL,
 	parent_work_type_id int,
-	foreign KEY (parent_work_type_id) REFERENCES works (work_type_id) ON DELETE SET NULL
+	foreign KEY (parent_work_type_id) REFERENCES works (work_type_id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS employees (
@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS employees (
     password TEXT NOT NULL,
     is_admin INTEGER NOT NULL,
     warehouse_id INTEGER,
-    FOREIGN KEY (warehouse_id) REFERENCES warehouses(warehouse_id) ON DELETE SET NULL
+    FOREIGN KEY (warehouse_id) REFERENCES warehouses(warehouse_id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS locations (
@@ -30,12 +30,12 @@ CREATE TABLE IF NOT EXISTS locations (
     location_shorthand TEXT,
     location_description TEXT NOT NULL,
     warehouse_id INTEGER,
-    FOREIGN KEY (warehouse_id) REFERENCES warehouses(warehouse_id) ON DELETE SET NULL
+    FOREIGN KEY (warehouse_id) REFERENCES warehouses(warehouse_id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS batteries (
     battery_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    serial_number TEXT UNIQUE,
+    serial_number TEXT NOT NULL UNIQUE,
     part_number INTEGER,
     item_type INTEGER,
     part_description TEXT NOT NULL,
@@ -47,9 +47,9 @@ CREATE TABLE IF NOT EXISTS batteries (
     location_old integer,
     location_death_row integer,
     picture BLOB,
-    FOREIGN KEY (location_new) REFERENCES locations(location_id) ON DELETE SET NULL,
-    FOREIGN KEY (location_old) REFERENCES locations(location_id) ON DELETE SET NULL,
-    FOREIGN KEY (location_death_row) REFERENCES locations(location_id) ON DELETE SET NULL
+    FOREIGN KEY (location_new) REFERENCES locations(location_id) ON DELETE CASCADE,
+    FOREIGN KEY (location_old) REFERENCES locations(location_id) ON DELETE CASCADE,
+    FOREIGN KEY (location_death_row) REFERENCES locations(location_id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS requests (
@@ -61,17 +61,17 @@ CREATE TABLE IF NOT EXISTS requests (
     warehouse_id INTEGER,
     state_id INTEGER,
     quantity INTEGER,
-    FOREIGN KEY (serial_number) REFERENCES batteries(serial_number) ON DELETE SET NULL,
-    FOREIGN KEY (work_type_id) REFERENCES works(work_type_id) ON DELETE SET NULL,
-    FOREIGN KEY (user_id) REFERENCES employees(user_id) ON DELETE SET NULL,
-    FOREIGN KEY (warehouse_id) REFERENCES warehouses(warehouse_id) ON DELETE SET NULL,
-    FOREIGN KEY (state_id) REFERENCES battery_state(state_id) ON DELETE SET NULL
+    FOREIGN KEY (serial_number) REFERENCES batteries(serial_number) ON DELETE CASCADE,
+    FOREIGN KEY (work_type_id) REFERENCES works(work_type_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES employees(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (warehouse_id) REFERENCES warehouses(warehouse_id) ON DELETE CASCADE,
+    FOREIGN KEY (state_id) REFERENCES battery_state(state_id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS reports (
     request_id INTEGER PRIMARY KEY AUTOINCREMENT,
     report_desc TEXT NOT NULL,
-    FOREIGN KEY (request_id) REFERENCES requests(request_id) ON DELETE SET NULL
+    FOREIGN KEY (request_id) REFERENCES requests(request_id) ON DELETE CASCADE
 );
 
 /*
