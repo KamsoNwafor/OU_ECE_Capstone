@@ -17,6 +17,9 @@ item_var = tk.StringVar()
 action_var = tk.StringVar()
 vibe_var = tk.StringVar()
 
+# Flag to prevent multiple camera instances
+camera_in_use = False
+
 # Define styles
 style = ttk.Style()
 style.theme_use("clam")
@@ -35,7 +38,7 @@ style.map("Primary.TButton", background=[("active", "#003b8e")])
 style.map("Secondary.TButton", background=[("active", "#555555")])
 style.map("Danger.TButton", background=[("active", "#cc3333")])
 
-# Database setup (unchanged)
+# Database setup
 def setup_database():
     conn = sqlite3.connect("evbs_data.db")
     cursor = conn.cursor()
@@ -65,7 +68,7 @@ def validate_step(field_value, field_name, current_frame, next_frame):
         return False
     return True
 
-# Save function (unchanged)
+# Save function
 def save_data():
     username = user_var.get().strip()
     location = location_var.get().strip()
@@ -158,35 +161,55 @@ def select_suggestion(event):
 
 # Photo functions
 def take_photo():
-    cam = cv2.VideoCapture(0)
-    if not cam.isOpened():
-        messagebox.showerror("Error", "Failed to open webcam.")
+    global camera_in_use
+    if camera_in_use:
+        messagebox.showwarning("Camera in Use", "Camera is already in use. Please wait.")
         return
     
-    cv2.namedWindow("Battery Scanner - SPACE to capture, ESC to cancel")
-    while True:
-        ret, frame = cam.read()
-        if not ret:
-            messagebox.showerror("Error", "Failed to capture video.")
-            break
-        cv2.imshow("Battery Scanner - SPACE to capture, ESC to cancel", frame)
-        key = cv2.waitKey(1) & 0xFF
-        if key == 32:  # Spacebar
-            photo_path = f"battery_{item_var.get().replace(' ', '_')}_{user_var.get()}.jpg"
-            cv2.imwrite(photo_path, frame)
-            cam.release()
-            cv2.destroyAllWindows()
-            display_photo(photo_path)
+    camera_in_use = True
+    cam = None
+    try:
+        print("Opening camera...")
+        cam = cv2.VideoCapture(0)
+        if not cam.isOpened():
+            messagebox.showerror("Error", "Failed to open webcam.")
             return
-        elif key == 27:  # ESC
+
+        print("Camera opened successfully.")
+        cv2.namedWindow("Battery Scanner - SPACE to capture, ESC to cancel")
+        while True:
+            ret, frame = cam.read()
+            if not ret:
+                messagebox.showerror("Error", "Failed to capture video.")
+                break
+            cv2.imshow("Battery Scanner - SPACE to capture, ESC to cancel", frame)
+            key = cv2.waitKey(30) & 0xFF  # Increased delay for better key detection
+            if key == 32:  # Spacebar
+                print("Spacebar pressed, capturing photo...")
+                photo_path = f"battery_{item_var.get().replace(' ', '_')}_{user_var.get()}.jpg"
+                cv2.imwrite(photo_path, frame)
+                print(f"Photo saved to {photo_path}")
+                break  # Explicitly break the loop
+            elif key == 27:  # ESC
+                print("ESC pressed, canceling...")
+                break  # Explicitly break the loop
+    except Exception as e:
+        messagebox.showerror("Error", f"Camera error: {str(e)}")
+    finally:
+        if cam is not None:
+            print("Releasing camera...")
             cam.release()
-            cv2.destroyAllWindows()
-            return
+        cv2.destroyAllWindows()
+        print("Camera released and windows closed.")
+        camera_in_use = False
+    
+    if key == 32:  # Only display photo if Spacebar was pressed
+        display_photo(photo_path)
 
 def display_photo(photo_path):
     try:
         img = Image.open(photo_path)
-        img.thumbnail((300, 300), Image.Resampling.LANCZOS)  # Reduced size for the smaller screen
+        img.thumbnail((250, 250), Image.Resampling.LANCZOS)
         img_tk = ImageTk.PhotoImage(img)
         photo_label.config(image=img_tk)
         photo_label.image = img_tk
@@ -222,37 +245,59 @@ for F in ("StartPage", "UserPage", "LocationPage", "ActionPage", "ItemPage", "Ph
     frames[F] = frame
     frame.grid(row=0, column=0, sticky="nsew")
 
+# Function to create a scrollable frame
+def create_scrollable_frame(parent):
+    canvas = tk.Canvas(parent, bg="#f5f5f5", highlightthickness=0)
+    scrollbar = ttk.Scrollbar(parent, orient="vertical", command=canvas.yview)
+    scrollable_frame = tk.Frame(canvas, bg="#f5f5f5")
+
+    scrollable_frame.bind(
+        "<Configure>",
+        lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+    )
+
+    canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+    canvas.configure(yscrollcommand=scrollbar.set)
+
+    canvas.pack(side="left", fill="both", expand=True)
+    scrollbar.pack(side="right", fill="y")
+    return scrollable_frame
+
 # ====== Start Page ======
 start_frame = frames["StartPage"]
-header_start = tk.Frame(start_frame, bg="#e0e0e0", height=30)  # Reduced height
+scrollable_start = create_scrollable_frame(start_frame)
+
+header_start = tk.Frame(scrollable_start, bg="#e0e0e0", height=30)
 header_start.pack(fill="x")
 tk.Label(header_start, text="SPIERS Smart System", font=("Arial", 12, "bold"), bg="#e0e0e0", fg="#333333").pack(pady=5)
 
-content_start = tk.Frame(start_frame, bg="white", bd=1, relief="groove")
-content_start.pack(pady=10, padx=10, fill="both", expand=True)
+content_start = tk.Frame(scrollable_start, bg="white", bd=1, relief="groove")
+content_start.pack(pady=5, padx=5, fill="both", expand=True)
 start_btn = ttk.Button(content_start, text="Start Session", style="Primary.TButton",
                        command=lambda: show_frame(frames["UserPage"]))
-start_btn.pack(pady=10)
+start_btn.pack(pady=5)
 
 # ====== User Page ======
 user_frame = frames["UserPage"]
-header_user = tk.Frame(user_frame, bg="#e0e0e0", height=30)
+scrollable_user = create_scrollable_frame(user_frame)
+
+header_user = tk.Frame(scrollable_user, bg="#e0e0e0", height=30)
 header_user.pack(fill="x")
 tk.Label(header_user, text="Step 1: Technician", font=("Arial", 10, "bold"), bg="#e0e0e0", fg="#333333").pack(pady=5)
 
-content_user = tk.Frame(user_frame, bg="white", bd=1, relief="groove")
-content_user.pack(pady=10, padx=10, fill="both", expand=True)
+content_user = tk.Frame(scrollable_user, bg="white", bd=1, relief="groove")
+content_user.pack(pady=5, padx=5, fill="both", expand=True)
 tk.Label(content_user, text="Who are you?", font=("Arial", 10, "bold"), bg="white", fg="#333333").pack(pady=5)
 user_entry = ttk.Entry(content_user, textvariable=user_var, font=("Arial", 10))
-user_entry.pack(pady=5)
+user_entry.pack(pady=2)
 suggestion_listbox = tk.Listbox(content_user, height=3, font=("Arial", 10), bg="#f0f0f0", relief="flat", bd=1, highlightthickness=0)
-suggestion_listbox.pack(pady=5, padx=10, fill="x")
+suggestion_listbox.pack(pady=2, padx=10, fill="x")
 user_entry.bind("<KeyRelease>", update_suggestions)
 suggestion_listbox.bind("<Double-Button-1>", select_suggestion)
 suggestion_listbox.bind("<Return>", select_suggestion)
 
 nav_frame_user = tk.Frame(content_user, bg="white")
-nav_frame_user.pack(pady=10, side="bottom", anchor="center")
+nav_frame_user.pack(pady=5, anchor="center")
 back_btn_user = ttk.Button(nav_frame_user, text="Back", style="Secondary.TButton",
                            command=lambda: go_back(user_frame))
 back_btn_user.pack(side="left", padx=5)
@@ -262,19 +307,21 @@ next_btn_user.pack(side="left", padx=5)
 
 # ====== Location Page ======
 location_frame = frames["LocationPage"]
-header_location = tk.Frame(location_frame, bg="#e0e0e0", height=30)
+scrollable_location = create_scrollable_frame(location_frame)
+
+header_location = tk.Frame(scrollable_location, bg="#e0e0e0", height=30)
 header_location.pack(fill="x")
 tk.Label(header_location, text="Step 2: Location", font=("Arial", 10, "bold"), bg="#e0e0e0", fg="#333333").pack(pady=5)
 
-content_location = tk.Frame(location_frame, bg="white", bd=1, relief="groove")
-content_location.pack(pady=10, padx=10, fill="both", expand=True)
+content_location = tk.Frame(scrollable_location, bg="white", bd=1, relief="groove")
+content_location.pack(pady=5, padx=5, fill="both", expand=True)
 tk.Label(content_location, text="Where are you?", font=("Arial", 10, "bold"), bg="white", fg="#333333").pack(pady=5)
 location_dropdown = ttk.Combobox(content_location, textvariable=location_var,
                                  values=["New Battery Section", "Old Battery Section"], font=("Arial", 10))
-location_dropdown.pack(pady=5)
+location_dropdown.pack(pady=2)
 
 nav_frame_location = tk.Frame(content_location, bg="white")
-nav_frame_location.pack(pady=10, side="bottom", anchor="center")
+nav_frame_location.pack(pady=5, anchor="center")
 back_btn_location = ttk.Button(nav_frame_location, text="Back", style="Secondary.TButton",
                                command=lambda: go_back(location_frame))
 back_btn_location.pack(side="left", padx=5)
@@ -284,19 +331,21 @@ next_btn_location.pack(side="left", padx=5)
 
 # ====== Action Page ======
 action_frame = frames["ActionPage"]
-header_action = tk.Frame(action_frame, bg="#e0e0e0", height=30)
+scrollable_action = create_scrollable_frame(action_frame)
+
+header_action = tk.Frame(scrollable_action, bg="#e0e0e0", height=30)
 header_action.pack(fill="x")
 tk.Label(header_action, text="Step 3: Action", font=("Arial", 10, "bold"), bg="#e0e0e0", fg="#333333").pack(pady=5)
 
-content_action = tk.Frame(action_frame, bg="white", bd=1, relief="groove")
-content_action.pack(pady=10, padx=10, fill="both", expand=True)
+content_action = tk.Frame(scrollable_action, bg="white", bd=1, relief="groove")
+content_action.pack(pady=5, padx=5, fill="both", expand=True)
 tk.Label(content_action, text="What are you doing?", font=("Arial", 10, "bold"), bg="white", fg="#333333").pack(pady=5)
 action_dropdown = ttk.Combobox(content_action, textvariable=action_var,
                                values=["Find", "Receive", "Ship", "Move"], font=("Arial", 10))
-action_dropdown.pack(pady=5)
+action_dropdown.pack(pady=2)
 
 nav_frame_action = tk.Frame(content_action, bg="white")
-nav_frame_action.pack(pady=10, side="bottom", anchor="center")
+nav_frame_action.pack(pady=5, anchor="center")
 back_btn_action = ttk.Button(nav_frame_action, text="Back", style="Secondary.TButton",
                              command=lambda: go_back(action_frame))
 back_btn_action.pack(side="left", padx=5)
@@ -306,12 +355,14 @@ next_btn_action.pack(side="left", padx=5)
 
 # ====== Item Page ======
 item_frame = frames["ItemPage"]
-header_item = tk.Frame(item_frame, bg="#e0e0e0", height=30)
+scrollable_item = create_scrollable_frame(item_frame)
+
+header_item = tk.Frame(scrollable_item, bg="#e0e0e0", height=30)
 header_item.pack(fill="x")
 tk.Label(header_item, text="Step 4: Item", font=("Arial", 10, "bold"), bg="#e0e0e0", fg="#333333").pack(pady=5)
 
-content_item = tk.Frame(item_frame, bg="white", bd=1, relief="groove")
-content_item.pack(pady=10, padx=10, fill="both", expand=True)
+content_item = tk.Frame(scrollable_item, bg="white", bd=1, relief="groove")
+content_item.pack(pady=5, padx=5, fill="both", expand=True)
 tk.Label(content_item, text="Scan/Select Battery", font=("Arial", 10, "bold"), bg="white", fg="#333333").pack(pady=5)
 
 barcode_label = tk.Label(content_item, text="Scan Barcode:", font=("Arial", 10), bg="white", fg="#333333")
@@ -342,7 +393,7 @@ barcode_entry.bind("<Return>", process_barcode)
 barcode_entry.focus_set()
 
 nav_frame_item = tk.Frame(content_item, bg="white")
-nav_frame_item.pack(pady=10, side="bottom", anchor="center")
+nav_frame_item.pack(pady=5, anchor="center")
 back_btn_item = ttk.Button(nav_frame_item, text="Back", style="Secondary.TButton",
                            command=lambda: go_back(item_frame))
 back_btn_item.pack(side="left", padx=5)
@@ -352,22 +403,24 @@ next_btn_item.pack(side="left", padx=5)
 
 # ====== Photo Page ======
 photo_frame = frames["PhotoPage"]
-header_photo = tk.Frame(photo_frame, bg="#e0e0e0", height=30)
+scrollable_photo = create_scrollable_frame(photo_frame)
+
+header_photo = tk.Frame(scrollable_photo, bg="#e0e0e0", height=30)
 header_photo.pack(fill="x")
 tk.Label(header_photo, text="Step 5: Photo", font=("Arial", 10, "bold"), bg="#e0e0e0", fg="#333333").pack(pady=5)
 
-content_photo = tk.Frame(photo_frame, bg="white", bd=1, relief="groove")
-content_photo.pack(pady=10, padx=10, fill="both", expand=True)
+content_photo = tk.Frame(scrollable_photo, bg="white", bd=1, relief="groove")
+content_photo.pack(pady=5, padx=5, fill="both", expand=True)
 tk.Label(content_photo, text="Take Photo", font=("Arial", 10, "bold"), bg="white", fg="#333333").pack(pady=5)
 
 shadow_frame = tk.Frame(content_photo, bg="#d0d0d0")
-shadow_frame.pack(pady=5)
-photo_container = tk.Frame(shadow_frame, bg="white", width=350, height=250)  # Scaled down for the screen
+shadow_frame.pack(pady=2)
+photo_container = tk.Frame(shadow_frame, bg="white", width=300, height=200)
 photo_container.pack(padx=2, pady=2)
 photo_container.pack_propagate(False)
 
 photo_label = tk.Label(photo_container, bg="white", relief="ridge", borderwidth=2)
-photo_label.place(relx=0.5, rely=0.5, anchor="center", width=300, height=200)
+photo_label.place(relx=0.5, rely=0.5, anchor="center", width=250, height=150)
 
 photo_status = tk.Label(content_photo, text="", font=("Arial", 8), bg="white")
 photo_status.pack(pady=2)
@@ -377,7 +430,7 @@ retake_btn = ttk.Button(content_photo, text="🔄 Retake", style="Danger.TButton
 retake_btn.pack(pady=2)
 
 nav_frame_photo = tk.Frame(content_photo, bg="white")
-nav_frame_photo.pack(pady=10, side="bottom", anchor="center")
+nav_frame_photo.pack(pady=5, anchor="center")
 back_btn_photo = ttk.Button(nav_frame_photo, text="Back", style="Secondary.TButton",
                             command=lambda: go_back(photo_frame))
 back_btn_photo.pack(side="left", padx=5)
@@ -387,12 +440,14 @@ next_btn_photo.pack(side="left", padx=5)
 
 # ====== Vibe Page ======
 vibe_frame = frames["VibePage"]
-header_vibe = tk.Frame(vibe_frame, bg="#e0e0e0", height=30)
+scrollable_vibe = create_scrollable_frame(vibe_frame)
+
+header_vibe = tk.Frame(scrollable_vibe, bg="#e0e0e0", height=30)
 header_vibe.pack(fill="x")
 tk.Label(header_vibe, text="Step 6: Status", font=("Arial", 10, "bold"), bg="#e0e0e0", fg="#333333").pack(pady=5)
 
-content_vibe = tk.Frame(vibe_frame, bg="white", bd=1, relief="groove")
-content_vibe.pack(pady=10, padx=10, fill="both", expand=True)
+content_vibe = tk.Frame(scrollable_vibe, bg="white", bd=1, relief="groove")
+content_vibe.pack(pady=5, padx=5, fill="both", expand=True)
 tk.Label(content_vibe, text="How are you?", font=("Arial", 10, "bold"), bg="white", fg="#333333").pack(pady=5)
 tk.Label(content_vibe, text="Select status:", font=("Arial", 8), bg="white", fg="#333333").pack(pady=2)
 vibe_options = [
@@ -405,10 +460,10 @@ vibe_options = [
 ]
 for text, value in vibe_options:
     rb = ttk.Radiobutton(content_vibe, text=text, value=value, variable=vibe_var, style="TRadiobutton")
-    rb.pack(anchor="w", padx=20, pady=2)
+    rb.pack(anchor="w", padx=20, pady=1)
 
 nav_frame_vibe = tk.Frame(content_vibe, bg="white")
-nav_frame_vibe.pack(pady=10, side="bottom", anchor="center")
+nav_frame_vibe.pack(pady=5, anchor="center")
 back_btn_vibe = ttk.Button(nav_frame_vibe, text="Back", style="Secondary.TButton",
                            command=lambda: go_back(vibe_frame))
 back_btn_vibe.pack(side="left", padx=5)
@@ -418,18 +473,20 @@ submit_btn_vibe.pack(side="left", padx=5)
 
 # ====== End Page ======
 end_frame = frames["EndPage"]
-header_end = tk.Frame(end_frame, bg="#e0e0e0", height=30)
+scrollable_end = create_scrollable_frame(end_frame)
+
+header_end = tk.Frame(scrollable_end, bg="#e0e0e0", height=30)
 header_end.pack(fill="x")
 tk.Label(header_end, text="Step 7: Done", font=("Arial", 10, "bold"), bg="#e0e0e0", fg="#333333").pack(pady=5)
 
-content_end = tk.Frame(end_frame, bg="white", bd=1, relief="groove")
-content_end.pack(pady=10, padx=10, fill="both", expand=True)
+content_end = tk.Frame(scrollable_end, bg="white", bd=1, relief="groove")
+content_end.pack(pady=5, padx=5, fill="both", expand=True)
 tk.Label(content_end, text="SPIERS System", font=("Arial", 12, "bold"), bg="white", fg="#333333").pack(pady=5)
 tk.Label(content_end, text="Thank you!\nOperation logged.", font=("Arial", 10), bg="white", fg="#333333").pack(pady=5)
 tk.Label(content_end, text="Next?", font=("Arial", 10), bg="white", fg="#333333").pack(pady=5)
 
 btn_frame = tk.Frame(content_end, bg="white")
-btn_frame.pack(pady=10)
+btn_frame.pack(pady=5)
 new_op_btn = ttk.Button(btn_frame, text="New Op", style="Primary.TButton", command=reset_session)
 new_op_btn.pack(side="left", padx=5)
 end_session_btn = ttk.Button(btn_frame, text="Exit", style="Danger.TButton", command=confirm_exit)
