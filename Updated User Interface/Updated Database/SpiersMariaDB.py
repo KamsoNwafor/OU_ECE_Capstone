@@ -207,7 +207,7 @@ def update_suggestions(event):
         return
     conn = mariadb.connect(
         user="root",
-        password="@We$ome12",
+        password="",
         host="localhost",
         port=3306,
         database="mariadb_data")
