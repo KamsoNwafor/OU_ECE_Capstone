@@ -125,5 +125,5 @@ class UserFrame(tk.Frame):
     def load_user_list(self):
         # self.local_cursor.execute("select user_id, first_name, last_name from employees where warehouse_id = ?", (self.controller.selected_warehouse_id,))  # retrieves all data related to employee table in database
         # self.users = self.local_cursor.fetchall()  # retrieves users in database
-        self.rds_cursor.execute("select user_id, first_name, last_name from employees where warehouse_id = ?", (self.controller.selected_warehouse_id,))  # retrieves all data related to employee table in database
+        self.rds_cursor.execute("""select user_id, first_name, last_name from employees where warehouse_id = ?""", (self.controller.selected_warehouse_id,))  # retrieves all data related to employee table in database
         self.users = self.rds_cursor.fetchall()  # retrieves users in database

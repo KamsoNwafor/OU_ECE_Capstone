@@ -144,6 +144,7 @@ class DatabaseManager:
             # Execute each SQL statement to create the tables
             for statement in create_tables_sql:
                 cursor.execute(statement)
+                conn.commit()
 
         except mariadb.Error as e:
             print(f"Error: {e}")
@@ -217,7 +218,7 @@ class DatabaseManager:
 
             for work_type_id, work_type_name, parent_work_type_id in works:
                 cursor.execute("""
-                            INSERT INTO WORKS (work_type_id, work_type_name, parent_work_type_id)
+                            INSERT INTO works (work_type_id, work_type_name, parent_work_type_id)
                             VALUES (?, ?, ?)
                         """, (work_type_id, work_type_name, parent_work_type_id))
 
@@ -310,12 +311,34 @@ class DatabaseManager:
 
     @classmethod
     def setup_aws_database(cls):
-        cls.rds_conn = cls.establish_connection(cls.rds_db_user, cls.rds_db_password, cls.rds_db_host,                                   cls.rds_db_port, cls.rds_db_name)
+        cls.rds_conn = cls.establish_connection(cls.rds_db_user, cls.rds_db_password, cls.rds_db_host, cls.rds_db_port, cls.rds_db_name)
         cls.rds_cursor = cls.rds_conn.cursor()
         cls.setup_mock_database(cls.rds_conn)
         cls.add_mock_data(cls.rds_conn)
-        return cls.rds_conn
-        
+
+    @classmethod
+    def clear_everything(cls):
+        commands = [
+            """drop table if exists reports;""",
+            """drop table if exists requests;""",
+            """drop table if exists batteries;""",
+            """drop table if exists locations;""",
+            """drop table if exists employees;""",
+            """drop table if exists works;""",
+            """drop table if exists battery_state;""",
+            """drop table if exists warehouses;"""
+        ]
+
+        cls.conn = cls.establish_connection(cls.rds_db_user, cls.rds_db_password, cls.rds_db_host, cls.rds_db_port,
+                                            cls.rds_db_name)
+        cls.cursor = cls.conn.cursor()
+
+        for instruction in commands:
+            cls.cursor.execute(instruction)
+
+        cls.conn.commit()
+        cls.conn.close()
+
     @classmethod
     def get_aws_conn (cls):
         return cls.rds_conn

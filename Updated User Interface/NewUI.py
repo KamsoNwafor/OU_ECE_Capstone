@@ -62,6 +62,8 @@ class App (tk.Tk):
 
 #dbm.setup_local_database()
 dbm.setup_aws_database()
+#dbm.clear_everything()
+
 
 root = App()
 root.title("Spiers New Technologies")
