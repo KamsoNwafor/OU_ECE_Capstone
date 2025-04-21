@@ -1,7 +1,7 @@
-import sqlite3
+import mariadb
 
-# Establish connection to SQLite3 database
-conn = sqlite3.connect('spiers_database.db')
+# Establish connection to Mariadb database
+conn = mariadb.connect('spiers_database.db')
 
 # Enable foreign key support
 conn.execute('PRAGMA foreign_keys = ON;')
@@ -95,22 +95,22 @@ values = [
     (3, "Ship", 1),
     (4, "Move", 1),
     (5, "Update Battery Status", 1),
-    (6, "New Battery Work", 5),
-    (7, "Old Battery Work", 5),
-    (8, "Death Row Battery Work", 5),
-    (9, "Store", 6),
-    (10, "Diagnostic Analysis", 7),
-    (11, "Disassembly", 7),
-    (12, "Repair", 7),
-    (13, "Re-assembly", 7),
-    (14, "Testing", 7),
-    (15, "Re-certification", 7),
-    (16, "Take Apart", 8),
-    (17, "Shred (pieces)", 8),
-    (18, "Shred (powder)", 8),
-    (19, "Make new battery", 8),
-    (20, "Take Picture", None),
-    (21, "Intake New Item", None)
+    (6, "Intake New Item", 2),
+    (7, "New Battery Work", 5),
+    (8, "Old Battery Work", 5),
+    (9, "Death Row Battery Work", 5),
+    (10, "Store", 6),
+    (11, "Diagnostic Analysis", 7),
+    (12, "Disassembly", 7),
+    (13, "Repair", 7),
+    (14, "Re-assembly", 7),
+    (15, "Testing", 7),
+    (16, "Re-certification", 7),
+    (17, "Take Apart", 8),
+    (18, "Shred (pieces)", 8),
+    (19, "Shred (powder)", 8),
+    (20, "Make new battery", 8),
+    (21, "Take Picture", None)
 ]
 
 for work_type_id, work_type_name, parent_work_type_id in values:

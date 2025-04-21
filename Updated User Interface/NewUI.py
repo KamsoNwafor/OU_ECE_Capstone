@@ -1,10 +1,11 @@
 import tkinter as tk
-
+from Database import DatabaseManager as dbm
 from StartPage import StartFrame
 from WarehousePage import WarehouseFrame
 from ReportPage import ReportFrame
 from UserPage import UserFrame
 from PasswordPage import PasswordFrame
+from TaskPage import TaskFrame
 
 # import the tk.Tk class that creates windows
 class App (tk.Tk):
@@ -19,13 +20,14 @@ class App (tk.Tk):
         self.frames = []
         self.curr_frame = 0
 
-        self.selected_warehouse = ""
-        self.user_name = ""
-        self.password = ""
+        self.selected_warehouse_id = ""
+        self.selected_user_id = ""
+        self.selected_password = ""
+        self.selected_task = ""
 
         # iterating through a tuple consisting of the different page layouts
         index = 0
-        for F in (StartFrame, WarehouseFrame, UserFrame, PasswordFrame, ReportFrame):
+        for F in (StartFrame, WarehouseFrame, UserFrame, PasswordFrame, TaskFrame, ReportFrame):
             # initializing frame of that object from relevant page with for loop
             frame = F(container, self)
             frame_tuple = (index, frame)
@@ -56,9 +58,10 @@ class App (tk.Tk):
 
     def back_button(self):
         self.show_page(self.curr_frame - 1)
-
         # warehouse actions
 
+#dbm.setup_local_database()
+dbm.setup_aws_database()
 
 root = App()
 root.title("Spiers New Technologies")
