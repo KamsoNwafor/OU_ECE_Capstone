@@ -1,0 +1,9 @@
+Operation Summary (ID: 5)
+Timestamp: 2025-04-22 01:14:56
+Technician ID: testuser
+Location: Old Battery Section
+Action: Ship
+Barcode: 576890
+Destination: Dealership B
+Photo Path: photo_20250422_011440.jpg
+Reaction: I feel good about Ship because it’s happy.
