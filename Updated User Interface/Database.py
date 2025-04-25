@@ -28,7 +28,6 @@ class DatabaseManager:
     rds_conn = None
     rds_cursor = None
 
-    """
     # Local MariaDB Database Connection Parameters
     local_db_user = "root"
     local_db_password = ""  # Replace with system MariaDB password
@@ -37,7 +36,7 @@ class DatabaseManager:
     local_db_name = "mariadb_data"
     local_conn = None
     local_cursor = None
-    """
+
 
     @classmethod
     def establish_connection(cls, db_user, db_password, db_host, db_port, db_name):
@@ -188,23 +187,22 @@ class DatabaseManager:
                 (2, "Receive", 1),
                 (3, "Ship", 1),
                 (4, "Move", 1),
-                (5, "Update Battery Status", 1),
-                (6, "Intake New Item", 2),
-                (7, "New Battery Work", 5),
-                (8, "Old Battery Work", 5),
-                (9, "Death Row Battery Work", 5),
-                (10, "Store", 6),
-                (11, "Diagnostic Analysis", 7),
-                (12, "Disassembly", 7),
-                (13, "Repair", 7),
-                (14, "Re-assembly", 7),
-                (15, "Testing", 7),
-                (16, "Re-certification", 7),
-                (17, "Take Apart", 8),
-                (18, "Shred (pieces)", 8),
-                (19, "Shred (powder)", 8),
-                (20, "Make new battery", 8),
-                (21, "Take Picture", None)
+                (5, "Update Battery Status", 2),
+                (6, "New Battery Work", 5),
+                (7, "Old Battery Work", 5),
+                (8, "Death Row Battery Work", 5),
+                (9, "Store", 6),
+                (10, "Diagnostic Analysis", 7),
+                (11, "Disassembly", 7),
+                (12, "Repair", 7),
+                (13, "Re-assembly", 7),
+                (14, "Testing", 7),
+                (15, "Re-certification", 7),
+                (16, "Take Apart", 8),
+                (17, "Shred (pieces)", 8),
+                (18, "Shred (powder)", 8),
+                (19, "Make new battery", 8),
+                (20, "Take Picture", None)
             ]
 
             for work_type_id, work_type_name, parent_work_type_id in works:
@@ -317,7 +315,6 @@ class DatabaseManager:
         except mariadb.Error as e:
             print(f"Error: {e}")
 
-    """
     @classmethod
     def setup_local_database(cls):
         cls.local_conn =  cls.establish_connection(cls.local_db_user, cls.local_db_password, cls.local_db_host, cls.local_db_port, cls.local_db_name)
@@ -325,6 +322,7 @@ class DatabaseManager:
         cls.setup_mock_database(cls.local_conn)
         cls.add_mock_data(cls.local_conn)
 
+    """
     @classmethod
     def get_local_conn (cls):
         return cls.local_conn
@@ -342,6 +340,8 @@ class DatabaseManager:
         commands = [
             """drop table if exists reports;""",
             """drop table if exists requests;""",
+            """drop table if exists customers;""",
+            """drop table if exists suppliers;""",
             """drop table if exists batteries;""",
             """drop table if exists locations;""",
             """drop table if exists employees;""",
@@ -350,15 +350,25 @@ class DatabaseManager:
             """drop table if exists warehouses;"""
         ]
 
-        cls.conn = cls.establish_connection(cls.rds_db_user, cls.rds_db_password, cls.rds_db_host, cls.rds_db_port,
+        cls.rds_conn = cls.establish_connection(cls.rds_db_user, cls.rds_db_password, cls.rds_db_host, cls.rds_db_port,
                                             cls.rds_db_name)
-        cls.cursor = cls.conn.cursor()
+        cls.rds_cursor = cls.rds_conn.cursor()
 
         for instruction in commands:
-            cls.cursor.execute(instruction)
+            cls.rds_cursor.execute(instruction)
 
-        cls.conn.commit()
-        cls.conn.close()
+        cls.rds_conn.commit()
+        cls.rds_conn.close()
+
+        cls.local_conn = cls.establish_connection(cls.local_db_user, cls.local_db_password, cls.local_db_host, cls.local_db_port,
+                                                cls.local_db_name)
+        cls.local_cursor = cls.local_conn.cursor()
+
+        for instruction in commands:
+            cls.local_cursor.execute(instruction)
+
+        cls.local_conn.commit()
+        cls.local_conn.close()
 
         # set title of excel file to save reports in
         workbook_title = "Request Report.xlsx"

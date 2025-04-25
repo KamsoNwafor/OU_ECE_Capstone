@@ -163,9 +163,10 @@ class ItemSelectionFrame(tk.Frame):
             # self.controller.show_page(9)
             pass
         # if take picture is selected, show take picture page
-        elif self.controller.selected_task_id == "21":
+        elif self.controller.selected_task_id == "20":
             # self.controller.show_page(10)
-            pass
+            self.controller.frames[7][1].image_preview()
+            self.controller.show_page(7)
 
     def load_battery_list(self):
         # finds all battery serial numbers in database and saves them as the original list of batteries

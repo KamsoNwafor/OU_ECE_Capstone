@@ -64,8 +64,8 @@ class FindFrame(tk.Frame):
         image_label is a label to display image_tk
         """
         self.image = None
-        self.max_width = math.floor(800 / 3)
-        self.max_height = 480 / 3
+        self.max_width = math.floor(800 / 2)
+        self.max_height = 480 / 2
         self.image_tk = None
         self.image_label = tk.Label(master=self)
         self.image_label.grid(row=1, column=2, padx=10, pady=10, sticky= "news")

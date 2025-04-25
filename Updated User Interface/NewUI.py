@@ -76,6 +76,7 @@ class App (tk.Tk):
         # warehouse actions
 
 #dbm.setup_local_database()
+#dbm.close_connection(dbm.local_conn)
 dbm.setup_rds_database()
 #dbm.clear_everything()
 

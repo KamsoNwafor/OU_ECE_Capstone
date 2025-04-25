@@ -1,3 +1,4 @@
+import math
 import tkinter as tk
 from Database import DatabaseManager as dbm
 from PIL import ImageTk, Image
@@ -7,37 +8,91 @@ import os
 
 # import the tk.Frame class that creates frames
 class PictureFrame(tk.Frame):
-    frame_index = 5
+    frame_index = 7 # will be 10 on the final UI
 
     # Initialize the Photo Capture Page
     def __init__(self, master, controller):
         tk.Frame.__init__(self, master, bg="#fafafa")
 
         self.controller = controller
-        self.cap = None  # Camera capture object
-        self.preview_running = False  # Camera preview status
-        self.photo_path = None  # Path to captured photo
+        self.cam = None
+        self.ret = None
+        self.frame = None
+        self.frame_rgb = None
+
+        # Flag to indicate when to capture the image
+        self.capture = False
+
+        self.image = None
+        self.max_width = math.floor(800 / 3)
+        self.max_height = math.floor(480 / 3)
+        self.image_tk = None
+        self.image_label = tk.Label(master=self)
+        self.image_label.grid(row=1, column=0, rowspan=2, columnspan=3, padx=10, pady=10, sticky="news")
+
+        self.image_label.bind("<Button-1>", self.capture_on_click)
 
         self.instruction = tk.Label(master = self)
         self.instruction.config(text = "Please touch the screen when you're ready to take the picture")
-        self.instruction.grid(row = 1, column = 0, sticky="news")
+        self.instruction.grid(row = 0, column = 1, padx = 10, pady = 10, sticky="news")
 
-        self.forward_button = tk.Button(master=self)  # button to go to the next page (report page)
-        self.forward_button.config(width=20, text="Forward", command=lambda: self.complete_task())  # tries to update password, or tell user that password is wrong
-        self.forward_button.grid(row=2, column=2, padx=10, pady=10,
-                                 sticky="SE")  # places forward button at the bottom right of screen
+        # creates button to go to the next page (report page) and places it at the bottom right of screen
+        self.forward_button = tk.Button(master=self)
+        self.forward_button.config(width=20, text="Forward", command=lambda: self.controller.forward_button())
+        self.forward_button.grid(row=3, column=2, padx=10, pady=10, sticky="SE")
+
+        # creates button to go retake picture
+        self.retake_button = tk.Button(master=self)
+        self.retake_button.config(width=20, text="Retake", command=lambda: self.image_preview())
+        self.retake_button.grid(row=3, column=1, padx=10, pady=10, sticky="S")
 
         self.back_button = tk.Button(master=self)  # button to go to the previous page (battery selection page)
-        self.back_button.config(width=20, text="Back", command=lambda: controller.back_button())
-        self.back_button.grid(row=2, column=0, padx=10, pady=10, sticky="SW")  # places back button at the bottom left of screen
+        self.back_button.config(width=20, text="Back", command=lambda: self.previous_page())
+        self.back_button.grid(row=3, column=0, padx=10, pady=10, sticky="WE")  # places back button at the bottom left of screen
+
+    def image_preview(self):
+        self.capture = False
+        self.open_camera()
+        self.show_preview()
+
+    def show_preview(self):
+        if self.cam.isOpened():
+            # reading the input using the camera
+            self.ret, self.frame = self.cam.read()
+
+            if self.ret:
+                self.frame = cv2.resize(self.frame, (self.max_width * 2, self.max_height * 2))  # Resize frame
+                self.frame_rgb = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)  # Convert to RGB
+                self.image = Image.fromarray(self.frame_rgb)
+                self.image_tk = ImageTk.PhotoImage(image=self.image)
+                self.image_label.imgtk = self.image_tk  # Keep reference
+                self.image_label.configure(image=self.image_tk)
+
+                if not self.capture:
+                    self.after(10, self.show_preview)
+                else:
+                    self.save_image()
+                    self.cam.release()
+
+    def open_camera(self):
+        cam_port = 0
+        self.cam = cv2.VideoCapture(cam_port)
+        self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, self.max_width)  # Set width
+        self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, self.max_height)  # Set height
+
+    def capture_on_click(self, event):
+        self.capture = True
+
+    def save_image(self):
+        if self.frame is not None:
+            filename = "captured_photo.jpg"
+            cv2.imwrite(filename, cv2.cvtColor(self.frame, cv2.COLOR_RGB2BGR))  # Save the frame as an image
+            print(f"Image saved as {filename}")
+
 
     def previous_page(self):
-        # if find is selected, show find page
-        if self.controller.selected_task_id == "1":
-            self.controller.frames[5][1].find_item()
-            self.controller.show_page(5)
         # if receive is selected, show receive page
-        elif self.controller.selected_task_id == "2":
+        if self.controller.selected_task_id == "2":
             self.controller.show_page(6)
         # if ship is selected, show ship page
         elif self.controller.selected_task_id == "3":
@@ -48,33 +103,9 @@ class PictureFrame(tk.Frame):
         # if update battery status is selected, show update battery status page
         elif self.controller.selected_task_id == "5":
             self.controller.show_page(9)
-        # if take picture is selected, show take picture page
-        elif self.controller.selected_task_id == "21":
-            self.controller.show_page(10)
+        # if take picture is selected, go to item selection page
+        elif self.controller.selected_task_id == "20":
+            self.controller.show_page(4)
 
-    # Start the camera for live preview
-    def start_camera(self):
-        self.stop_camera()  # Ensure any existing camera is stopped
-        try:
-            self.cap = cv2.VideoCapture(0)  # Initialize camera
-            if not self.cap.isOpened():
-                tk.messagebox.showerror("Camera Error",
-                                        "Failed to access camera. Please ensure the camera is connected and not in use.",
-                                        parent=self.controller.root)
-                self.cap = None
-                return
-        except Exception as e:
-            tk.messagebox.showerror("Camera Error", f"Error initializing camera: {str(e)}",
-                                    parent=self.controller.root)
-            self.cap = None
-            return
-
-    def stop_camera(self):
-        self.preview_running = False  # Stop preview updates
-        if self.cap:
-            try:
-                self.cap.release()  # Release camera
-            except Exception as e:
-                print(f"Error releasing camera: {str(e)}")
-            self.cap = None
-        self.preview_label.configure(image="")  # Clear preview
+    def update_preview(self):
+        pass
