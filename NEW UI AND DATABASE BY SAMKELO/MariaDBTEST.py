@@ -4,21 +4,25 @@ from PIL import Image, ImageTk
 import cv2
 import time
 import os
-import mysql.connector  # For MariaDB connectivity
+import mariadb  # For MariaDB connectivity
 import hashlib  # For password hashing (fallback)
 
 # Initialize MariaDB database (verify connection)
 def init_db():
     try:
-        conn = mysql.connector.connect(
-            host="127.0.0.1",
-            user="spiers_user",
-            password="spiers_pass",
+        conn = mariadb.connect(
+            # host="127.0.0.1",
+            host = "localhost",
+            # user="spiers_user",
+            user = "root",
+            # password="spiers_pass",
+            password = "@We$ome12",
             database="spiers_system",
-            auth_plugin="mysql_native_password"
+            port = 3306
+            # auth_plugin="mysql_native_password"
         )
         conn.close()
-    except mysql.connector.Error as err:
+    except mariadb.Error as err:
         print(f"Error connecting to database: {err}")
         raise
 
@@ -177,12 +181,16 @@ def reset_variables():
 # Function to log operation to MariaDB
 def log_operation():
     try:
-        conn = mysql.connector.connect(
-            host="127.0.0.1",
-            user="spiers_user",
-            password="spiers_pass",
+        conn = mariadb.connect(
+            # host="127.0.0.1",
+            host="localhost",
+            # user="spiers_user",
+            user="root",
+            # password="spiers_pass",
+            password="@We$ome12",
             database="spiers_system",
-            auth_plugin="mysql_native_password"
+            port=3306
+            # auth_plugin="mysql_native_password"
         )
         cursor = conn.cursor()
 
@@ -218,19 +226,23 @@ def log_operation():
         cursor.close()
         conn.close()
         return operation_id
-    except mysql.connector.Error as err:
+    except mariadb.Error as err:
         messagebox.showerror("Database Error", f"Error logging operation: {str(err)}", parent=root)
         return None
 
 # Function to generate operation summary
 def generate_operation_summary(operation_id):
     try:
-        conn = mysql.connector.connect(
-            host="127.0.0.1",
-            user="spiers_user",
-            password="spiers_pass",
+        conn = mariadb.connect(
+            # host="127.0.0.1",
+            host="localhost",
+            # user="spiers_user",
+            user="root",
+            # password="spiers_pass",
+            password="@We$ome12",
             database="spiers_system",
-            auth_plugin="mysql_native_password"
+            port=3306
+            # auth_plugin="mysql_native_password"
         )
         cursor = conn.cursor()
 
@@ -272,7 +284,7 @@ def generate_operation_summary(operation_id):
         cursor.close()
         conn.close()
         return summary
-    except mysql.connector.Error as err:
+    except mariadb.Error as err:
         return f"Error generating summary: {str(err)}"
 
 # OperationSpecificPage
@@ -847,12 +859,16 @@ class UserPage(tk.Frame):
 
         # Check credentials against the MariaDB database
         try:
-            conn = mysql.connector.connect(
-                host="127.0.0.1",
-                user="spiers_user",
-                password="spiers_pass",
+            conn = mariadb.connect(
+                # host="127.0.0.1",
+                host="localhost",
+                # user="spiers_user",
+                user="root",
+                # password="spiers_pass",
+                password="@We$ome12",
                 database="spiers_system",
-                auth_plugin="mysql_native_password"
+                port=3306
+                # auth_plugin="mysql_native_password"
             )
             cursor = conn.cursor()
             cursor.execute("SELECT password_hash FROM users WHERE user_id = %s", (user_id,))
@@ -870,7 +886,7 @@ class UserPage(tk.Frame):
             else:
                 messagebox.showerror("Authentication Failed", "Invalid User ID or Password", parent=root)
                 password_var.set("")
-        except mysql.connector.Error as err:
+        except mariadb.Error as err:
             messagebox.showerror("Database Error", f"Error accessing database: {str(err)}", parent=root)
             password_var.set("")
 

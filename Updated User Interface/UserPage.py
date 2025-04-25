@@ -1,11 +1,13 @@
 import tkinter as tk
 from Database import DatabaseManager as dbm
 
-# TODO: Add Switch Case if admin
+# TODO: Prevent from going forward if not in list
 
 # import the tk.Frame class that creates frames
 class UserFrame(tk.Frame):
     chosen_user = None
+    frame_index = 1
+
     def __init__(self, master, controller):
         tk.Frame.__init__(self, master) # initialise the imported class
 
@@ -14,16 +16,13 @@ class UserFrame(tk.Frame):
        # self.local_conn = dbm.get_local_conn()  # connect to local database
        # self.local_cursor = self.local_conn.cursor()  # create cursor to search through local database
 
-        self.rds_conn = dbm.get_aws_conn()  # connect to local database
+        self.rds_conn = dbm.get_rds_conn()  # connect to local database
         self.rds_cursor = self.rds_conn.cursor()  # create cursor to search through local database
 
         self.users = None # create a null variable to store the users
 
         self.filtered_users = []  # creates array to store filtered warehouse in drop-down list
         self.filtered_user_ids = []  # creates array to store filtered warehouse IDs
-
-        self.user_warehouse = tk.Label(master = self) # store selected warehouse from previous page
-        self.user_warehouse.grid(row = 0, column = 0) # display selected warehouse on top left side of screen
 
         self.user_name = tk.Label(master = self) # label asking for username
         self.user_name.config(text="Username")
@@ -76,9 +75,9 @@ class UserFrame(tk.Frame):
             self.filtered_users = []
             self.filtered_user_ids = []
             for item in self.users: # start with an empty array, then add users to the array if they contain the phrase in the entry box
-                if value.lower() in item[1].lower() or value.lower() in item[2].lower():
-                    self.filtered_users.append(f"{item[1]} {item[2]}")
-                    self.filtered_user_ids.append(item[0])
+                if value.lower() in f"{item[1]} {item[2]}".lower():
+                    self.filtered_users.append(f"{item[1]} {item[2]}") # combine first and last names
+                    self.filtered_user_ids.append(item[0]) # add user_ids of employees
 
         # update data in list with all the warehouses in the array
         self.list_update(self.filtered_users)
@@ -97,33 +96,21 @@ class UserFrame(tk.Frame):
         for i in self.user_list.curselection(): # curselection is "cursor selection"
             self.employee.set(self.user_list.get(i)) # if a user in the list is selected, then update the text variable with the name selected
 
-        chosen_user = self.filtered_users[index]
+        self.chosen_user = self.filtered_users[index]
         self.controller.selected_user_id = self.filtered_user_ids[index]  # Return the nth occurring user selection (this accounts for duplicates)
 
         # Now update the PasswordFrame to reflect the selected User
-        self.controller.frames[3][1].update_user() # updated the password page to see what user they selected
+        self.controller.frames[2][1].update_user() # updated the password page to see what user they selected
 
-        self.controller.frames[3][1].load_correct_password()  # load the relevant user's password to be compared with password entry
+        self.controller.frames[2][1].load_correct_password()  # load the relevant user's password to be compared with password entry
 
         self.controller.forward_button() # go to the next page (password page)
 
-        data = [chosen_user]
+        data = [self.chosen_user]
         self.list_update(data)  # filters the list, so if user comes back from next page, they see only 1 item
-
-    def update_warehouse(self):
-        # self.local_cursor.execute("""select warehouse_desc from warehouses where warehouse_id = ?""", (self.controller.selected_warehouse_id,))
-        # result = self.local_cursor.fetchall()
-
-        self.rds_cursor.execute("""select warehouse_desc from warehouses where warehouse_id = ?""", (self.controller.selected_warehouse_id,))
-        result = self.rds_cursor.fetchall()
-
-        warehouse = result[0][0] # get warehouse description
-
-        self.user_warehouse.config(text="Selected Warehouse: " + warehouse)
-        # edits the user_warehouse variable so it displays what warehouse the user selected.
 
     def load_user_list(self):
         # self.local_cursor.execute("select user_id, first_name, last_name from employees where warehouse_id = ?", (self.controller.selected_warehouse_id,))  # retrieves all data related to employee table in database
         # self.users = self.local_cursor.fetchall()  # retrieves users in database
-        self.rds_cursor.execute("""select user_id, first_name, last_name from employees where warehouse_id = ?""", (self.controller.selected_warehouse_id,))  # retrieves all data related to employee table in database
+        self.rds_cursor.execute("""select user_id, first_name, last_name from employees""")  # retrieves all data related to employee table in database
         self.users = self.rds_cursor.fetchall()  # retrieves users in database

@@ -3,13 +3,16 @@ from Database import DatabaseManager as dbm
 from mariadb import Error
 
 # TODO: Network Connection Option after else
+# TODO: Handle Improper Network Connections
 
 # import the tk.Frame class that creates frames
 class StartFrame(tk.Frame):
+    frame_index = 0
+
     def __init__(self, master, controller):
         tk.Frame.__init__(self, master) # initialise the imported class
 
-        self.controller = controller
+        self.controller = controller # store an instance of controller in frame, easier to manage controller data
 
         self.start_label = tk.Label(master = self)
         self.start_label.config(text="Spiers New Technologies")
@@ -21,7 +24,7 @@ class StartFrame(tk.Frame):
 
     def manage_connection_status(self):
         # local_conn = dbm.get_local_conn()
-        rds_conn = dbm.get_aws_conn()
+        rds_conn = dbm.get_rds_conn()
 
         # if local_conn.isconnected() or rds_conn.isconnected():
 
@@ -34,6 +37,7 @@ class StartFrame(tk.Frame):
             rds_conn.ping()  # This will attempt to reconnect if needed
             print("Connection is open!")
             connection_status = True  # Connection is good
+            self.controller.frames[1][1].load_user_list()
         except Error as e:
             print("Connection lost or failed.")
             connection_status = False  # Connection failed

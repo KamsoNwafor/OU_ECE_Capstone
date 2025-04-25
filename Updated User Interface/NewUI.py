@@ -1,11 +1,15 @@
 import tkinter as tk
 from Database import DatabaseManager as dbm
 from StartPage import StartFrame
-from WarehousePage import WarehouseFrame
-from ReportPage import ReportFrame
 from UserPage import UserFrame
 from PasswordPage import PasswordFrame
-from TaskPage import TaskFrame
+from TaskSelectionPage import TaskSelectionFrame
+from ItemSelectionPage import ItemSelectionFrame
+from FindPage import FindFrame
+from ReceivePage import ReceiveFrame
+from PicturePage import PictureFrame
+from EmotionSelectionPage import EmotionSelectionFrame
+from RequestPage import RequestFrame
 
 # import the tk.Tk class that creates windows
 class App (tk.Tk):
@@ -20,14 +24,25 @@ class App (tk.Tk):
         self.frames = []
         self.curr_frame = 0
 
-        self.selected_warehouse_id = ""
-        self.selected_user_id = ""
-        self.selected_password = ""
-        self.selected_task = ""
+        self.selected_user_id = None
+        self.selected_task_id = None
+        self.selected_battery_serial_number = None
+        self.selected_state_id = None
+        self.selected_supplier_id = None
+        self.selected_emotion = None
 
         # iterating through a tuple consisting of the different page layouts
         index = 0
-        for F in (StartFrame, WarehouseFrame, UserFrame, PasswordFrame, TaskFrame, ReportFrame):
+        for F in (StartFrame,  #0
+                  UserFrame,  #1
+                  PasswordFrame,  #2
+                  TaskSelectionFrame,  #3
+                  ItemSelectionFrame,  #4
+                  FindFrame,  #5
+                  ReceiveFrame, #6
+                  PictureFrame, #7
+                  EmotionSelectionFrame,  #8
+                  RequestFrame): #9
             # initializing frame of that object from relevant page with for loop
             frame = F(container, self)
             frame_tuple = (index, frame)
@@ -61,7 +76,7 @@ class App (tk.Tk):
         # warehouse actions
 
 #dbm.setup_local_database()
-dbm.setup_aws_database()
+dbm.setup_rds_database()
 #dbm.clear_everything()
 
 
