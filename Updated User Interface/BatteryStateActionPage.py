@@ -90,8 +90,13 @@ class BatteryStateActionFrame(tk.Frame):
     def previous_page(self):
         self.controller.show_page(10)
 
+        index = 0
+        for action_var in self.action_vars:
+            if action_var.get() != 0:
+                self.checks[index].deselect()
+            index += 1
+
         for button in self.checks:
-            button.deselect()
             button.destroy()
 
         self.forward_button.destroy()

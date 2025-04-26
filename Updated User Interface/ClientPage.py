@@ -2,7 +2,7 @@ import tkinter as tk
 from Database import DatabaseManager as dbm
 
 # import the tk.Frame class that creates frames
-class ReceiveShipFrame (tk.Frame):
+class ClientFrame (tk.Frame):
     chosen_client = None
     frame_index = 6
 
@@ -144,8 +144,13 @@ class ReceiveShipFrame (tk.Frame):
 
     # load the take picture page.
     def complete_task(self):
-        self.controller.frames[10][1].update_state_list()
-        self.controller.show_page(10)
+        if self.controller.selected_task_id == "2":
+            self.controller.frames[10][1].update_state_list()
+            self.controller.show_page(10)
+        elif self.controller.selected_task_id == "3":
+            self.controller.frames[8][1].image_preview()
+            self.controller.show_page(8)
+
 
     def update_client_task_list(self):
         # searches for the client roles in the database

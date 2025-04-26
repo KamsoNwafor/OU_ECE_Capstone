@@ -6,7 +6,7 @@ from PasswordPage import PasswordFrame
 from TaskSelectionPage import TaskSelectionFrame
 from ItemSelectionPage import ItemSelectionFrame
 from FindPage import FindFrame
-from ReceiveShipPage import ReceiveShipFrame
+from ClientPage import ClientFrame
 from BatteryState import BatteryStateFrame
 from BatteryStateActionPage import BatteryStateActionFrame
 from MovePage import MoveFrame
@@ -34,6 +34,7 @@ class App (tk.Tk):
         self.selected_state_id = None
         self.selected_client_id = None
         self.selected_actions = None
+        self.old_location_id = None
         self.selected_location_id = None
         self.selected_emotion = None
         self.selected_picture = None
@@ -46,7 +47,7 @@ class App (tk.Tk):
                   TaskSelectionFrame,  #3
                   ItemSelectionFrame,  #4
                   FindFrame,  #5
-                  ReceiveShipFrame,  #6
+                  ClientFrame,  #6 # For both receive and ship
                   MoveFrame,  #7
                   PictureFrame,  #8
                   NewItemFrame,  #9
@@ -92,9 +93,11 @@ dbm.setup_rds_database()
 #dbm.close_connection(dbm.rds_conn)
 #dbm.clear_everything()
 
+
 root = App()
 root.title("Spiers New Technologies")
 root.geometry("800x480")
 
 root.mainloop()
+
 

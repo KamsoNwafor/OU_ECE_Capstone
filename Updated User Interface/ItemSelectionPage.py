@@ -146,13 +146,15 @@ class ItemSelectionFrame(tk.Frame):
         if self.controller.selected_task_id == "1":
             self.controller.frames[5][1].find_item()
             self.controller.show_page(5)
-        # if receive or ship is selected, show receive/ship page
+        # if receive or ship is selected, show client page
         elif (self.controller.selected_task_id == "2"
            or self.controller.selected_task_id == "3"):
             self.controller.frames[6][1].update_client_task_list()
             self.controller.show_page(6)
         # if move is selected, show move page
         elif self.controller.selected_task_id == "4":
+            self.controller.frames[7][1].load_locations()
+            self.controller.frames[7][1].load_current_location()
             self.controller.show_page(7)
         # if take picture is selected, show take picture page
         elif self.controller.selected_task_id == "20":

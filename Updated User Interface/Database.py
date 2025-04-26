@@ -110,7 +110,6 @@ class DatabaseManager:
                 """
                 CREATE TABLE IF NOT EXISTS locations (
                     location_id INTEGER PRIMARY KEY AUTO_INCREMENT,
-                    location_shorthand TEXT,
                     location_description TEXT
                 );
                 """,
@@ -191,8 +190,8 @@ class DatabaseManager:
             cls.save_changes(conn)
 
             client_status = [
-                (1, "Suppliers"),
-                (2, "Customers")
+                (1, "Supplier"),
+                (2, "Customer")
             ]
 
             for client_status_id, client_status_desc in client_status:
@@ -277,19 +276,19 @@ class DatabaseManager:
 
             # Insert each location into the location table
             locations = [
-                ("FS1", "floor space 1"),
-                ("FS2", "floor space 2"),
-                ("FS3", "floor space 3"),
-                ("SS1", "shelf space 1"),
-                ("SS2", "shelf space 2"),
-                ("SS3", "shelf space 3")
+                (1, "floor space 1"),
+                (2, "floor space 2"),
+                (3, "floor space 3"),
+                (4, "shelf space 1"),
+                (5, "shelf space 2"),
+                (6, "shelf space 3")
             ]
 
-            for location_shorthand, location_description in locations:
+            for location_id, location_description in locations:
                 cursor.execute("""
-                    INSERT INTO locations (location_shorthand, location_description)
+                    INSERT INTO locations (location_id, location_description)
                     VALUES (?, ?)
-                """, (location_shorthand, location_description))
+                """, (location_id, location_description))
 
             cls.save_changes(conn)
 

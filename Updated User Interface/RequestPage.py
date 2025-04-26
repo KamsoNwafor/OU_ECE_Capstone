@@ -1,4 +1,5 @@
 import io
+import os
 import tkinter as tk
 import openpyxl as xl
 from openpyxl import Workbook
@@ -8,6 +9,8 @@ from PIL import Image
 
 # Report Frame
 class RequestFrame(tk.Frame):
+    frame_index = 13
+
     def __init__(self, master, controller):
         tk.Frame.__init__(self, master)
         self.controller = controller
@@ -24,10 +27,11 @@ class RequestFrame(tk.Frame):
         self.serial_num = None
         self.work_type_id = None
         self.user_id = None
-        self.state_id = 1
-        self.client_id = 1
-        self.actions = [1]
-        self.location_id = None
+        self.state_id = "1"
+        self.client_id = "1"
+        self.actions = ["1"]
+        self.old_location_id = None
+        self.new_location_id = None
         self.picture = None
 
         # variables to write a report
@@ -42,8 +46,10 @@ class RequestFrame(tk.Frame):
         self.client = None
         self.battery_desc = None
         self.battery_actions = None
+        self.old_location = None
         self.new_location = None
         self.picture_data = None
+        self.client_status = None
 
         # picture manager
         self.max_width = 800 // 3
@@ -144,6 +150,12 @@ class RequestFrame(tk.Frame):
         if self.controller.selected_picture:
             self.picture = self.controller.selected_picture
 
+        if self.controller.selected_location_id:
+            self.new_location_id = self.controller.selected_location_id
+
+        if self.controller.old_location_id:
+            self.old_location_id = self.controller.old_location_id
+
         self.rds_cursor.execute("""SELECT part_description FROM batteries where serial_number = ?""",
                                 (self.serial_num,))
         self.result = self.rds_cursor.fetchall()
@@ -153,10 +165,16 @@ class RequestFrame(tk.Frame):
         self.result = self.rds_cursor.fetchall()
         self.employee = f"{self.result[0][0]} {self.result[0][1]}"
 
-        self.rds_cursor.execute("""SELECT client_desc FROM clients where client_id = ?""",
+        self.rds_cursor.execute("""SELECT client_desc, client_status_id FROM clients where client_id = ?""",
                                 (self.client_id,))
         self.result = self.rds_cursor.fetchall()
         self.client = self.result[0][0]
+        self.client_status = self.result[0][1]
+
+        self.rds_cursor.execute("""SELECT client_status_desc FROM client_status where client_status_id = ?""",
+                                (self.client_status,))
+        self.result = self.rds_cursor.fetchall()
+        self.client_status = self.result[0][0]
 
         self.rds_cursor.execute("""SELECT state_desc FROM battery_state where state_id = ?""",
                                 (self.state_id,))
@@ -168,7 +186,7 @@ class RequestFrame(tk.Frame):
             self.rds_cursor.execute("""SELECT work_type_name FROM works where work_type_id = ?""",
                                     (action,))
             self.result = self.rds_cursor.fetchall()
-            self.battery_actions += f"{self.result}, "
+            self.battery_actions += f"{self.result[0][0]}, "
 
         if self.picture:
             self.picture = self.picture.resize((self.max_width, self.max_height), Image.LANCZOS)
@@ -178,32 +196,45 @@ class RequestFrame(tk.Frame):
                 self.picture.save(byte_io, format="JPEG")
                 self.picture_data = byte_io.getvalue()
 
+        if self.old_location_id:
+            self.rds_cursor.execute("""SELECT location_description FROM locations where location_id = ?""",
+                                    (self.old_location_id,))
+            self.result = self.rds_cursor.fetchall()
+            self.old_location = self.result[0][0]
+
+        if self.new_location_id:
+            self.rds_cursor.execute("""SELECT location_description FROM locations where location_id = ?""",
+                                    (self.new_location_id,))
+            self.result = self.rds_cursor.fetchall()
+            self.new_location = self.result[0][0]
+
         # if find is selected
         if self.work_type_id == "1":
             self.report.set(f"{self.employee} found {self.battery_desc}. Now {self.employee} is {self.emotion}")
         # if receive is selected
         elif self.work_type_id == "2":
             self.report.set(
-                f"{self.employee} received {self.battery_desc} from {self.client}.\n"
-                + f"{self.battery_desc}'s state was {self.battery_state}.\n"
-                + f"Thus {self.employee} carried out the following actions:\n"
-                + f"{self.battery_actions}\n"
-                + f"Now {self.employee} is {self.emotion}.\n")
+                f"{self.employee} received {self.battery_desc} from {self.client_status} {self.client}. {os.linesep}"
+                + f"{self.battery_desc}'s state was {self.battery_state}. {os.linesep}"
+                + f"Thus {self.employee} carried out the following actions: {os.linesep}"
+                + f"{self.battery_actions}. {os.linesep}"
+                + f"Now {self.employee} is {self.emotion}. {os.linesep}")
         # if ship is selected
         elif self.work_type_id == "3":
             self.report.set(
-                f"{self.employee} shipped {self.battery_desc} to {self.client}.\n"
-                + f"{self.battery_desc}'s state was {self.battery_state}.\n"
-                + f"Now {self.employee} is {self.emotion}.\n")
+                f"{self.employee} shipped {self.battery_desc} to {self.client_status} {self.client}. {os.linesep}"
+                + f"Now {self.employee} is {self.emotion}. {os.linesep}")
         # if move is selected
         elif self.work_type_id == "4":
             self.report.set(
-                f"{self.employee} moved {self.battery_desc} to {self.new_location}.\n"
-                + f"Now {self.employee} is {self.emotion}.\n")
-        # if update battery status is selected
-        elif self.work_type_id == "5":
-            pass
+                f"{self.employee} moved {self.battery_desc} from {self.old_location} to {self.new_location}. {os.linesep}"
+                + f"Now {self.employee} is {self.emotion}. {os.linesep}")
         # if take picture is selected
+        elif self.work_type_id == "20":
+            self.report.set(
+                f"{self.employee} took picture of {self.battery_desc}. {os.linesep}"
+                + f"Now {self.employee} is {self.emotion}. {os.linesep}")
+        # if intake new item is selected
         elif self.work_type_id == "21":
             pass
 
@@ -228,6 +259,17 @@ class RequestFrame(tk.Frame):
                                  self.report.get()))
 
         dbm.save_changes(self.rds_conn)
+
+        if (self.state_id == 1
+        and self.picture):
+            self.rds_cursor.execute("""
+            UPDATE batteries
+            SET picture = ?
+            WHERE serial_number = ?
+            """, (self.picture, self.serial_num))
+
+            dbm.save_changes(self.rds_conn)
+
 
         self.rds_cursor.execute("""SELECT * FROM reports;""")
         self.result = self.rds_cursor.fetchall()
@@ -269,7 +311,8 @@ class RequestFrame(tk.Frame):
         self.state_id = 1
         self.client_id = 1
         self.actions = [1]
-        self.location_id = None
+        self.old_location_id = None
+        self.new_location_id = None
         self.picture = None
 
         # variables to write a report
@@ -284,5 +327,6 @@ class RequestFrame(tk.Frame):
         self.client = None
         self.battery_desc = None
         self.battery_actions = None
+        self.old_location = None
         self.new_location = None
         self.picture_data = None

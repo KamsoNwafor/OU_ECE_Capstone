@@ -85,17 +85,19 @@ class PictureFrame(tk.Frame):
     def save_image(self):
         if self.frame is not None:
             filename = "captured_photo.jpg"
-            cv2.imwrite(filename, cv2.cvtColor(self.frame, cv2.COLOR_RGB2BGR))  # Save the frame as an image
+            cv2.imwrite(filename, self.frame)  # Save the frame as an image
             print(f"Image saved as {filename}")
             self.controller.selected_picture = Image.open(filename)
 
 
     def previous_page(self):
-        # if receive or ship is selected, show battery status action page
-        if (self.controller.selected_task_id == "2"
-        or self.controller.selected_task_id == "3"):
+        # if receive is selected, show battery status action page
+        if self.controller.selected_task_id == "2":
             self.controller.show_page(11)
             self.controller.selected_actions = None
+        # if ship is selected, show ship page
+        elif self.controller.selected_task_id == "3":
+            self.controller.show_page(6)
         # if move is selected, show move page
         elif self.controller.selected_task_id == "4":
             self.controller.show_page(7)
@@ -110,5 +112,5 @@ class PictureFrame(tk.Frame):
 
     def next_page(self):
         self.controller.frames[-2][1].update_emotion_list()
-        self.controller.forward_button()
+        self.controller.show_page(-2)
 
