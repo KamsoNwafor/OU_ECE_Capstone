@@ -3,6 +3,7 @@ import os
 import tkinter as tk
 import openpyxl as xl
 from openpyxl import Workbook
+from openpyxl.styles import Alignment
 from Database import DatabaseManager as dbm
 from datetime import datetime
 from PIL import Image
@@ -94,7 +95,7 @@ class RequestFrame(tk.Frame):
         self.report_label.grid(row = 0, column = 1, padx = 10, pady = 10)
 
         self.report_text = tk.Text(master = self)
-        self.report_text.config(height = 20, width = 50)
+        self.report_text.config(height = 20, width = 50, wrap = tk.WORD)
         self.report_text.grid(row = 1, column = 1, padx = 10, pady = 10)
 
         self.submit_button = tk.Button(master = self)
@@ -217,40 +218,41 @@ class RequestFrame(tk.Frame):
 
         # if find is selected
         if self.work_type_id == "1":
-            self.report.set(f"{self.employee} found {self.battery_desc}. Now {self.employee} is {self.emotion}")
+            self.report.set(f"{self.employee} found {self.battery_desc}.\n"
+                            + f"Now {self.employee} is {self.emotion}")
         # if receive is selected
         elif self.work_type_id == "2":
             self.report.set(
-                f"{self.employee} received {self.battery_desc} from {self.client_status} {self.client}. {os.linesep}"
-                + f"{self.battery_desc}'s state was {self.battery_state}. {os.linesep}"
-                + f"Thus {self.employee} carried out the following actions: {os.linesep}"
-                + f"{self.battery_actions}. {os.linesep}"
-                + f"Now {self.employee} is {self.emotion}. {os.linesep}")
+                f"{self.employee} received {self.battery_desc} from {self.client_status} {self.client}.\n"
+                + f"{self.battery_desc}'s state was {self.battery_state}.\n"
+                + f"Thus {self.employee} carried out the following actions:\n"
+                + f"{self.battery_actions}.\n"
+                + f"Now {self.employee} is {self.emotion}.")
         # if ship is selected
         elif self.work_type_id == "3":
             self.report.set(
-                f"{self.employee} shipped {self.battery_desc} to {self.client_status} {self.client}. {os.linesep}"
-                + f"Now {self.employee} is {self.emotion}. {os.linesep}")
+                f"{self.employee} shipped {self.battery_desc} to {self.client_status} {self.client}.\n"
+                + f"Now {self.employee} is {self.emotion}.")
         # if move is selected
         elif self.work_type_id == "4":
             self.report.set(
-                f"{self.employee} moved {self.battery_desc} from {self.old_location} to {self.new_location}. {os.linesep}"
-                + f"Now {self.employee} is {self.emotion}. {os.linesep}")
+                f"{self.employee} moved {self.battery_desc} from {self.old_location} to {self.new_location}.\n"
+                + f"Now {self.employee} is {self.emotion}.")
         # if take picture is selected
         elif self.work_type_id == "20":
             self.report.set(
-                f"{self.employee} took picture of {self.battery_desc}. {os.linesep}"
-                + f"Now {self.employee} is {self.emotion}. {os.linesep}")
+                f"{self.employee} took picture of {self.battery_desc}.\n"
+                + f"Now {self.employee} is {self.emotion}.")
         # if intake new item is selected
         elif self.work_type_id == "21":
             self.report.set(
-                f"{self.employee} added {self.battery_desc} to the database. {os.linesep}"
-                + f"Serial Number is {self.serial_num}. {os.linesep}"
-                + f"Part Number is {self.part_num}. {os.linesep}"
-                + f"Item Type is {self.item_type}. {os.linesep}"
-                + f"Now {self.employee} is {self.emotion}. {os.linesep}")
-
-        self.report_text.insert("1.0", self.report.get())
+                f"{self.employee} added {self.battery_desc} to the database.\n"
+                + f"Serial Number is {self.serial_num}.\n"
+                + f"Part Number is {self.part_num}.\n"
+                + f"Item Type is {self.item_type}.\n"
+                + f"Now {self.employee} is {self.emotion}.")
+        
+        self.report_text.insert("end", self.report.get())
 
     def submit_request(self):
         if self.work_type_id == "21":
@@ -289,21 +291,22 @@ class RequestFrame(tk.Frame):
         self.rds_cursor.execute(""" INSERT INTO reports VALUES(?, ?, ?); """,
                                 (self.request_id,
                                  self.curr_time,
-                                 self.report.get()))
+                                 self.report_text.get("1.0", tk.END)))
 
         dbm.save_changes(self.rds_conn)
-
-        self.rds_cursor.execute("""SELECT * FROM reports;""")
-        self.result = self.rds_cursor.fetchall()
 
     def submit_report(self):
         self.request_cell = self.report_sheet[f"A{self.request_id + 1}"]
         self.timestamp_cell = self.report_sheet[f"B{self.request_id + 1}"]  # increment so cell titles are not over-written
         self.report_cell = self.report_sheet[f"C{self.request_id + 1}"]
 
+        self.report_cell.alignment = Alignment(wrap_text=True) # wrap text so newline breaks appear
+
         self.request_cell.value = self.request_id
         self.timestamp_cell.value = self.request_timestamp.get()  ## Assign values to cells
-        self.report_cell.value = self.report.get()
+        self.report_cell.value = self.report_text.get("1.0", tk.END)
+
+        print(self.report_cell.value)
 
         self.adjust_cell_width()
 
