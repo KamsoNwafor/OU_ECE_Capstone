@@ -42,6 +42,7 @@ class TaskSelectionFrame(tk.Frame):
 
         # loads battery list and updates the user on the battery selection page
         self.controller.frames[4][1].load_battery_list()
+        self.controller.frames[4][1].bind_double_click()
         self.controller.frames[4][1].update_user()
         self.controller.show_page(4)
 

@@ -33,6 +33,8 @@ class RequestFrame(tk.Frame):
         self.old_location_id = None
         self.new_location_id = None
         self.picture = None
+        self.part_num = None
+        self.item_type = None
 
         # variables to write a report
         self.emotion = None
@@ -149,17 +151,42 @@ class RequestFrame(tk.Frame):
             
         if self.controller.selected_picture:
             self.picture = self.controller.selected_picture
+            self.picture = self.picture.resize((self.max_width, self.max_height), Image.LANCZOS)
+
+            # Convert the image to binary data (BLOB format)
+            with io.BytesIO() as byte_io:
+                self.picture.save(byte_io, format="JPEG")
+                self.picture_data = byte_io.getvalue()
 
         if self.controller.selected_location_id:
             self.new_location_id = self.controller.selected_location_id
+            self.rds_cursor.execute("""SELECT location_description FROM locations where location_id = ?""",
+                                    (self.new_location_id,))
+            self.result = self.rds_cursor.fetchall()
+            self.new_location = self.result[0][0]
 
         if self.controller.old_location_id:
             self.old_location_id = self.controller.old_location_id
+            self.rds_cursor.execute("""SELECT location_description FROM locations where location_id = ?""",
+                                    (self.old_location_id,))
+            self.result = self.rds_cursor.fetchall()
+            self.old_location = self.result[0][0]
+        else:
+            self.old_location = "No Location"
 
-        self.rds_cursor.execute("""SELECT part_description FROM batteries where serial_number = ?""",
-                                (self.serial_num,))
-        self.result = self.rds_cursor.fetchall()
-        self.battery_desc = self.result[0][0]
+        if self.controller.selected_task_id == "21":
+            self.battery_desc = self.controller.input_battery_desc
+        else:
+            self.rds_cursor.execute("""SELECT part_description FROM batteries where serial_number = ?""",
+                                    (self.serial_num,))
+            self.result = self.rds_cursor.fetchall()
+            self.battery_desc = self.result[0][0]
+
+        if self.controller.selected_part_number:
+            self.part_num = self.controller.selected_part_number
+
+        if self.controller.selected_item_type:
+            self.item_type = self.controller.selected_item_type
 
         self.rds_cursor.execute("""SELECT first_name, last_name FROM employees where user_id = ?""", (self.user_id,))
         self.result = self.rds_cursor.fetchall()
@@ -187,26 +214,6 @@ class RequestFrame(tk.Frame):
                                     (action,))
             self.result = self.rds_cursor.fetchall()
             self.battery_actions += f"{self.result[0][0]}, "
-
-        if self.picture:
-            self.picture = self.picture.resize((self.max_width, self.max_height), Image.LANCZOS)
-
-            # Convert the image to binary data (BLOB format)
-            with io.BytesIO() as byte_io:
-                self.picture.save(byte_io, format="JPEG")
-                self.picture_data = byte_io.getvalue()
-
-        if self.old_location_id:
-            self.rds_cursor.execute("""SELECT location_description FROM locations where location_id = ?""",
-                                    (self.old_location_id,))
-            self.result = self.rds_cursor.fetchall()
-            self.old_location = self.result[0][0]
-
-        if self.new_location_id:
-            self.rds_cursor.execute("""SELECT location_description FROM locations where location_id = ?""",
-                                    (self.new_location_id,))
-            self.result = self.rds_cursor.fetchall()
-            self.new_location = self.result[0][0]
 
         # if find is selected
         if self.work_type_id == "1":
@@ -236,11 +243,37 @@ class RequestFrame(tk.Frame):
                 + f"Now {self.employee} is {self.emotion}. {os.linesep}")
         # if intake new item is selected
         elif self.work_type_id == "21":
-            pass
+            self.report.set(
+                f"{self.employee} added {self.battery_desc} to the database. {os.linesep}"
+                + f"Serial Number is {self.serial_num}. {os.linesep}"
+                + f"Part Number is {self.part_num}. {os.linesep}"
+                + f"Item Type is {self.item_type}. {os.linesep}"
+                + f"Now {self.employee} is {self.emotion}. {os.linesep}")
 
         self.report_text.insert("1.0", self.report.get())
 
     def submit_request(self):
+        if self.work_type_id == "21":
+            self.rds_cursor.execute(""" INSERT INTO batteries VALUES(?, ?, ?, ?, ?, ?); """,
+                                    (self.serial_num,
+                                     self.part_num,
+                                     self.item_type,
+                                     self.battery_desc,
+                                     None,
+                                     self.picture))
+
+            dbm.save_changes(self.rds_conn)
+
+        if (self.state_id == "1"
+        and self.picture):
+            self.rds_cursor.execute("""
+            UPDATE batteries
+            SET picture = ?
+            WHERE serial_number = ?
+            """, (self.picture, self.serial_num))
+
+            dbm.save_changes(self.rds_conn)
+
         self.rds_cursor.execute(""" INSERT INTO requests VALUES(?, ?, ?, ?, ?, ?, ?, ?); """,
                                 (self.request_id,
                                  self.curr_time,
@@ -260,20 +293,8 @@ class RequestFrame(tk.Frame):
 
         dbm.save_changes(self.rds_conn)
 
-        if (self.state_id == 1
-        and self.picture):
-            self.rds_cursor.execute("""
-            UPDATE batteries
-            SET picture = ?
-            WHERE serial_number = ?
-            """, (self.picture, self.serial_num))
-
-            dbm.save_changes(self.rds_conn)
-
-
         self.rds_cursor.execute("""SELECT * FROM reports;""")
         self.result = self.rds_cursor.fetchall()
-        print(self.result)
 
     def submit_report(self):
         self.request_cell = self.report_sheet[f"A{self.request_id + 1}"]

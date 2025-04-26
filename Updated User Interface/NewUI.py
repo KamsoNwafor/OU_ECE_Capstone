@@ -38,6 +38,9 @@ class App (tk.Tk):
         self.selected_location_id = None
         self.selected_emotion = None
         self.selected_picture = None
+        self.selected_part_number = None
+        self.selected_item_type = None
+        self.input_battery_desc = None
 
         # iterating through a tuple consisting of the different page layouts
         index = 0

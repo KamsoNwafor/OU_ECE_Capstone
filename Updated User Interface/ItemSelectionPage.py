@@ -71,9 +71,6 @@ class ItemSelectionFrame(tk.Frame):
         # attaches scrollbar to list
         self.battery_scrollbar.config(command=self.battery_list.yview)
 
-        # if a list item is double tapped, select it, place listbox to the left of scrollbar.
-        # start with empty list
-        self.battery_list.bind("<Double-1>", self.battery_selection)
         self.battery_list.grid(row=2, column=1, padx=10, pady=10)
         self.list_update(self.filtered_batteries)
 
@@ -123,23 +120,31 @@ class ItemSelectionFrame(tk.Frame):
         self.user_name.config(text="Selected User Name: " + employee_name)
 
     def battery_selection(self, event):
-        # returns the index of the item chosen as listed in the original list
-        index = self.battery_list.curselection()[0]
+        if self.controller.selected_task_id != "21":
+            if self.filtered_batteries:
+                # returns the index of the item chosen as listed in the original list
+                index = self.battery_list.curselection()[0]
 
-        # if a battery in the list is selected, then update the text variable with the name selected
-        for i in self.battery_list.curselection():
-            self.battery.set(self.battery_list.get(i))
+                # if a battery in the list is selected, then update the text variable with the name selected
+                for i in self.battery_list.curselection():
+                    self.battery.set(self.battery_list.get(i))
 
-        # Return the battery of the given index (this accounts for duplicates)
-        self.chosen_battery = self.filtered_batteries[index]
-        self.controller.selected_battery_serial_number = self.filtered_battery_ids[index]
+                # Return the battery of the given index (this accounts for duplicates)
+                self.chosen_battery = self.filtered_batteries[index]
+                self.controller.selected_battery_serial_number = self.filtered_battery_ids[index]
 
-        # show the page for the corresponding task selected on the previous page
-        self.show_task_page()
+                # show the page for the corresponding task selected on the previous page
+                self.show_task_page()
 
-        # filters the list, so if battery comes back from next page, they see only 1 item
-        data = [self.chosen_battery]
-        self.list_update(data)
+                # filters the list, so if battery comes back from next page, they see only 1 item
+                data = [self.chosen_battery]
+                self.list_update(data)
+        else:
+            self.controller.input_battery_desc = self.battery.get()
+
+            self.controller.frames[9][1].set_description()
+            self.controller.show_page(9)
+
 
     def show_task_page (self):
         # if find is selected, show find page
@@ -160,14 +165,17 @@ class ItemSelectionFrame(tk.Frame):
         elif self.controller.selected_task_id == "20":
             self.controller.frames[8][1].image_preview()
             self.controller.show_page(8)
-        # if intake new item is selected, show update battery status page
-        elif self.controller.selected_task_id == "21":
-            self.controller.show_page(9)
 
     def load_battery_list(self):
         # finds all battery serial numbers in database and saves them as the original list of batteries
         self.rds_cursor.execute("select serial_number, part_description from batteries")
         self.batteries = self.rds_cursor.fetchall()
+
+    def bind_double_click(self):
+        if self.controller.selected_task_id != "21":
+            # if a list item is double tapped, select it, place listbox to the left of scrollbar.
+            # start with empty list
+            self.battery_list.bind("<Double-1>", self.battery_selection)
 
     def previous_page(self):
         self.controller.show_page(3)

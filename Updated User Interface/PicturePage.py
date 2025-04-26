@@ -1,10 +1,7 @@
 import math
 import tkinter as tk
-from Database import DatabaseManager as dbm
 from PIL import ImageTk, Image
-import io
 import cv2
-import os
 
 # import the tk.Frame class that creates frames
 class PictureFrame(tk.Frame):
@@ -19,6 +16,7 @@ class PictureFrame(tk.Frame):
         self.ret = None
         self.frame = None
         self.frame_rgb = None
+        self.filename = "captured_photo.jpg"
 
         # Flag to indicate when to capture the image
         self.capture = False
@@ -84,10 +82,9 @@ class PictureFrame(tk.Frame):
 
     def save_image(self):
         if self.frame is not None:
-            filename = "captured_photo.jpg"
-            cv2.imwrite(filename, self.frame)  # Save the frame as an image
-            print(f"Image saved as {filename}")
-            self.controller.selected_picture = Image.open(filename)
+            cv2.imwrite(self.filename, self.frame)  # Save the frame as an image
+            print(f"Image saved as {self.filename}")
+            self.controller.selected_picture = Image.open(self.filename)
 
 
     def previous_page(self):
@@ -95,20 +92,25 @@ class PictureFrame(tk.Frame):
         if self.controller.selected_task_id == "2":
             self.controller.show_page(11)
             self.controller.selected_actions = None
-        # if ship is selected, show ship page
+        # if ship is selected, show client page
         elif self.controller.selected_task_id == "3":
             self.controller.show_page(6)
+            self.controller.selected_client_id = None
         # if move is selected, show move page
         elif self.controller.selected_task_id == "4":
             self.controller.show_page(7)
+            self.controller.selected_location_id = None
         # if take picture is selected, go to item selection page
         elif self.controller.selected_task_id == "20":
             self.controller.show_page(4)
+            self.controller.selected_battery_serial_number = None
         # if intake new item is selected, go to new item page
         elif self.controller.selected_task_id == "21":
             self.controller.show_page(9)
+            self.controller.selected_part_number = None
+            self.controller.selected_item_type = None
+            self.controller.input_battery_desc = None
 
-        self.controller.selected_picture = None
 
     def next_page(self):
         self.controller.frames[-2][1].update_emotion_list()
