@@ -91,23 +91,24 @@ class UserFrame(tk.Frame):
             self.user_list.insert('end', item)
 
     def user_selection(self, event):
-        index = self.user_list.curselection()[0]  # returns the index of the item chosen
+        if self.user_list.curselection():
+            index = self.user_list.curselection()[0]  # returns the index of the item chosen
 
-        for i in self.user_list.curselection(): # curselection is "cursor selection"
-            self.employee.set(self.user_list.get(i)) # if a user in the list is selected, then update the text variable with the name selected
+            for i in self.user_list.curselection(): # curselection is "cursor selection"
+                self.employee.set(self.user_list.get(i)) # if a user in the list is selected, then update the text variable with the name selected
 
-        self.chosen_user = self.filtered_users[index]
-        self.controller.selected_user_id = self.filtered_user_ids[index]  # Return the nth occurring user selection (this accounts for duplicates)
+            self.chosen_user = self.filtered_users[index]
+            self.controller.selected_user_id = self.filtered_user_ids[index]  # Return the nth occurring user selection (this accounts for duplicates)
 
-        # Now update the PasswordFrame to reflect the selected User
-        self.controller.frames[2][1].update_user() # updated the password page to see what user they selected
+            # Now update the PasswordFrame to reflect the selected User
+            self.controller.frames[2][1].update_user() # updated the password page to see what user they selected
 
-        self.controller.frames[2][1].load_correct_password()  # load the relevant user's password to be compared with password entry
+            self.controller.frames[2][1].load_correct_password()  # load the relevant user's password to be compared with password entry
 
-        self.controller.forward_button() # go to the next page (password page)
+            self.controller.forward_button() # go to the next page (password page)
 
-        data = [self.chosen_user]
-        self.list_update(data)  # filters the list, so if user comes back from next page, they see only 1 item
+            data = [self.chosen_user]
+            self.list_update(data)  # filters the list, so if user comes back from next page, they see only 1 item
 
     def load_user_list(self):
         # self.local_cursor.execute("select user_id, first_name, last_name from employees where warehouse_id = ?", (self.controller.selected_warehouse_id,))  # retrieves all data related to employee table in database
