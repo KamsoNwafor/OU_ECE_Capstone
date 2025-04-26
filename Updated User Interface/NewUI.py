@@ -6,11 +6,14 @@ from PasswordPage import PasswordFrame
 from TaskSelectionPage import TaskSelectionFrame
 from ItemSelectionPage import ItemSelectionFrame
 from FindPage import FindFrame
-from ReceivePage import ReceiveFrame
+from ReceiveShipPage import ReceiveShipFrame
+from BatteryState import BatteryStateFrame
+from BatteryStateActionPage import BatteryStateActionFrame
+from MovePage import MoveFrame
+from NewItemPage import NewItemFrame
 from PicturePage import PictureFrame
 from EmotionSelectionPage import EmotionSelectionFrame
 from RequestPage import RequestFrame
-from BatteryState import StateSelectionFrame
 
 # import the tk.Tk class that creates windows
 class App (tk.Tk):
@@ -30,7 +33,10 @@ class App (tk.Tk):
         self.selected_battery_serial_number = None
         self.selected_state_id = None
         self.selected_client_id = None
+        self.selected_actions = None
+        self.selected_location_id = None
         self.selected_emotion = None
+        self.selected_picture = None
 
         # iterating through a tuple consisting of the different page layouts
         index = 0
@@ -40,11 +46,14 @@ class App (tk.Tk):
                   TaskSelectionFrame,  #3
                   ItemSelectionFrame,  #4
                   FindFrame,  #5
-                  ReceiveFrame, #6
-                  StateSelectionFrame, #7
-                  PictureFrame, #8
-                  EmotionSelectionFrame,  #9
-                  RequestFrame): #10
+                  ReceiveShipFrame,  #6
+                  MoveFrame,  #7
+                  PictureFrame,  #8
+                  NewItemFrame,  #9
+                  BatteryStateFrame,  #10
+                  BatteryStateActionFrame,  #11
+                  EmotionSelectionFrame,  #12
+                  RequestFrame): #13
             # initializing frame of that object from relevant page with for loop
             frame = F(container, self)
             frame_tuple = (index, frame)
@@ -88,3 +97,4 @@ root.title("Spiers New Technologies")
 root.geometry("800x480")
 
 root.mainloop()
+

@@ -43,7 +43,7 @@ class TaskSelectionFrame(tk.Frame):
         # loads battery list and updates the user on the battery selection page
         self.controller.frames[4][1].load_battery_list()
         self.controller.frames[4][1].update_user()
-        self.controller.forward_button()
+        self.controller.show_page(4)
 
     def update_task_list(self):
 
@@ -84,8 +84,12 @@ class TaskSelectionFrame(tk.Frame):
 
         # button to go to the previous logical page (user page, jumps past password page)
         self.back_button = tk.Button(master=self)
-        self.back_button.config(width=20, text="Back", command=lambda: self.controller.show_page(1))
+        self.back_button.config(width=20, text="Back", command=lambda: self.previous_page())
 
         # places back button at the bottom left of screen
         self.back_button.grid(row=index, column=0, padx=10, pady=10, sticky="SW")
+
+    def previous_page(self):
+        self.controller.show_page(1)
+        self.controller.selected_user_id = None
 

@@ -1,8 +1,10 @@
+import io
 import tkinter as tk
 import openpyxl as xl
 from openpyxl import Workbook
 from Database import DatabaseManager as dbm
 from datetime import datetime
+from PIL import Image
 
 # Report Frame
 class RequestFrame(tk.Frame):
@@ -24,18 +26,28 @@ class RequestFrame(tk.Frame):
         self.user_id = None
         self.state_id = 1
         self.client_id = 1
+        self.actions = [1]
+        self.location_id = None
+        self.picture = None
 
         # variables to write a report
         self.emotion = None
         self.report = tk.StringVar()
         self.report.set("")
         
-        # Variables to avoid gargbage collection
+        # Variables to avoid garbage collection
         self.result = None
         self.employee = None
         self.battery_state = None
         self.client = None
         self.battery_desc = None
+        self.battery_actions = None
+        self.new_location = None
+        self.picture_data = None
+
+        # picture manager
+        self.max_width = 800 // 3
+        self.max_height = 480 // 3
 
         # set title of excel file to save reports in
         self.workbook_title = "Request Report.xlsx"
@@ -57,7 +69,7 @@ class RequestFrame(tk.Frame):
         self.timestamp_title_cell = self.report_sheet["B1"]
         self.report_title_cell = self.report_sheet["C1"]
 
-        if (self.request_title_cell.value != "Request ID" ## if title columns have wrong title, give them the right title
+        if (self.request_title_cell.value != "Request ID" # if title columns have wrong title, give them the right title
          or self.timestamp_title_cell.value != "Report Timestamp"
          or self.report_title_cell.value != "Report"):
             self.request_title_cell.value = "Request ID"
@@ -73,22 +85,27 @@ class RequestFrame(tk.Frame):
         self.report_label.config(text="Please Make Any Final Edits To The Report")
         self.report_label.grid(row = 0, column = 1, padx = 10, pady = 10)
 
-        self.report_text = tk.Entry(master = self)
-        self.report_text.config(textvariable=self.report)
-        self.report_text.grid(row = 1, column = 1, padx = 10, pady = 10, sticky="we")
+        self.report_text = tk.Text(master = self)
+        self.report_text.config(height = 20, width = 50)
+        self.report_text.grid(row = 1, column = 1, padx = 10, pady = 10)
 
         self.submit_button = tk.Button(master = self)
         self.submit_button.config(width=20, text="Confirm", command=lambda: self.complete_report())
         self.submit_button.grid(row=2, column=2, padx=10, pady=10, sticky="SE")
 
         self.back_button = tk.Button(master=self)
-        self.back_button.config(width=20, text="Back", command=lambda: self.controller.back_button())
+        self.back_button.config(width=20, text="Back", command=lambda: self.previous_page())
         self.back_button.grid(row=2, column=0, padx=10, pady=10, sticky = "SW")
 
     def complete_report(self):
         self.submit_request()
         self.submit_report()
         self.close_app()
+
+    def previous_page(self):
+        self.controller.back_button()
+        self.report_text.delete("1.0", tk.END)
+        self.reset_report()
 
     def close_app(self):
         self.wb.save(self.workbook_title)
@@ -121,6 +138,12 @@ class RequestFrame(tk.Frame):
         if self.controller.selected_client_id:
             self.client_id = self.controller.selected_client_id
 
+        if self.controller.selected_actions:
+            self.actions = self.controller.selected_actions
+            
+        if self.controller.selected_picture:
+            self.picture = self.controller.selected_picture
+
         self.rds_cursor.execute("""SELECT part_description FROM batteries where serial_number = ?""",
                                 (self.serial_num,))
         self.result = self.rds_cursor.fetchall()
@@ -135,18 +158,48 @@ class RequestFrame(tk.Frame):
         self.result = self.rds_cursor.fetchall()
         self.client = self.result[0][0]
 
+        self.rds_cursor.execute("""SELECT state_desc FROM battery_state where state_id = ?""",
+                                (self.state_id,))
+        self.result = self.rds_cursor.fetchall()
+        self.battery_state = self.result[0][0]
+
+        self.battery_actions = ""
+        for action in self.actions:
+            self.rds_cursor.execute("""SELECT work_type_name FROM works where work_type_id = ?""",
+                                    (action,))
+            self.result = self.rds_cursor.fetchall()
+            self.battery_actions += f"{self.result}, "
+
+        if self.picture:
+            self.picture = self.picture.resize((self.max_width, self.max_height), Image.LANCZOS)
+
+            # Convert the image to binary data (BLOB format)
+            with io.BytesIO() as byte_io:
+                self.picture.save(byte_io, format="JPEG")
+                self.picture_data = byte_io.getvalue()
+
         # if find is selected
         if self.work_type_id == "1":
             self.report.set(f"{self.employee} found {self.battery_desc}. Now {self.employee} is {self.emotion}")
         # if receive is selected
         elif self.work_type_id == "2":
-            self.report.set(f"{self.employee} received {self.battery_desc} from {self.client}. Now {self.employee} is {self.emotion}")
+            self.report.set(
+                f"{self.employee} received {self.battery_desc} from {self.client}.\n"
+                + f"{self.battery_desc}'s state was {self.battery_state}.\n"
+                + f"Thus {self.employee} carried out the following actions:\n"
+                + f"{self.battery_actions}\n"
+                + f"Now {self.employee} is {self.emotion}.\n")
         # if ship is selected
         elif self.work_type_id == "3":
-            pass
+            self.report.set(
+                f"{self.employee} shipped {self.battery_desc} to {self.client}.\n"
+                + f"{self.battery_desc}'s state was {self.battery_state}.\n"
+                + f"Now {self.employee} is {self.emotion}.\n")
         # if move is selected
         elif self.work_type_id == "4":
-            pass
+            self.report.set(
+                f"{self.employee} moved {self.battery_desc} to {self.new_location}.\n"
+                + f"Now {self.employee} is {self.emotion}.\n")
         # if update battery status is selected
         elif self.work_type_id == "5":
             pass
@@ -154,15 +207,20 @@ class RequestFrame(tk.Frame):
         elif self.work_type_id == "21":
             pass
 
+        self.report_text.insert("1.0", self.report.get())
+
     def submit_request(self):
-        self.rds_cursor.execute(""" INSERT INTO requests VALUES(?, ?, ?, ?, ?, ?, ?); """,
+        self.rds_cursor.execute(""" INSERT INTO requests VALUES(?, ?, ?, ?, ?, ?, ?, ?); """,
                                 (self.request_id,
                                  self.curr_time,
                                  self.serial_num,
                                  self.work_type_id,
                                  self.user_id,
                                  self.state_id,
-                                 self.client_id))
+                                 self.client_id,
+                                 self.picture_data))
+
+        dbm.save_changes(self.rds_conn)
         
         self.rds_cursor.execute(""" INSERT INTO reports VALUES(?, ?, ?); """,
                                 (self.request_id,
@@ -170,10 +228,6 @@ class RequestFrame(tk.Frame):
                                  self.report.get()))
 
         dbm.save_changes(self.rds_conn)
-
-        self.rds_cursor.execute("""SELECT * FROM requests;""")
-        self.result = self.rds_cursor.fetchall()
-        print(self.result)
 
         self.rds_cursor.execute("""SELECT * FROM reports;""")
         self.result = self.rds_cursor.fetchall()
@@ -202,3 +256,33 @@ class RequestFrame(tk.Frame):
 
             adjusted_width = (max_length + 2) * 1.2
             self.report_sheet.column_dimensions[column].width = adjusted_width
+
+    def reset_report(self):
+        # variables carried over from the controller, don't initialise any of them
+        self.request_id = None
+        self.curr_time = None
+        self.request_timestamp = tk.StringVar()
+        self.request_timestamp.set("")
+        self.serial_num = None
+        self.work_type_id = None
+        self.user_id = None
+        self.state_id = 1
+        self.client_id = 1
+        self.actions = [1]
+        self.location_id = None
+        self.picture = None
+
+        # variables to write a report
+        self.emotion = None
+        self.report = tk.StringVar()
+        self.report.set("")
+
+        # Variables to avoid garbage collection
+        self.result = None
+        self.employee = None
+        self.battery_state = None
+        self.client = None
+        self.battery_desc = None
+        self.battery_actions = None
+        self.new_location = None
+        self.picture_data = None

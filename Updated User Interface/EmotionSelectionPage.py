@@ -42,28 +42,15 @@ class EmotionSelectionFrame(tk.Frame):
 
         # loads battery list and updates the user on the battery selection page
         self.controller.frames[-1][1].load_report()
-        self.controller.forward_button()
+        self.controller.show_page(-1)
 
     def previous_page(self):
         # if find is selected, show find page
         if self.controller.selected_task_id == "1":
-            self.controller.frames[5][1].find_item()
             self.controller.show_page(5)
-        # if receive is selected, show receive page
-        elif self.controller.selected_task_id == "2":
-            self.controller.show_page(6)
-        # if ship is selected, show ship page
-        elif self.controller.selected_task_id == "3":
-            self.controller.show_page(7)
-        # if move is selected, show move page
-        elif self.controller.selected_task_id == "4":
+        # if not, then show take picture page, since every other instruction needs a picture
+        else:
             self.controller.show_page(8)
-        # if update battery status is selected, show update battery status page
-        elif self.controller.selected_task_id == "5":
-            self.controller.show_page(9)
-        # if take picture is selected, show take picture page
-        elif self.controller.selected_task_id == "21":
-            self.controller.show_page(10)
 
     def update_emotion_list(self):
         # track number of emotions

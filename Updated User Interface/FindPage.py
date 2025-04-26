@@ -54,7 +54,7 @@ class FindFrame(tk.Frame):
         # create button to go back to battery selection page, and places back button at the bottom left of screen
         # when button is clicked, previous page will be loaded
         self.back_button = tk.Button(master=self)
-        self.back_button.config(width=20, text="Back", command=lambda: controller.back_button())
+        self.back_button.config(width=20, text="Back", command=lambda: self.previous_page())
         self.back_button.grid(row=2, column=0, padx=10, pady=10, sticky="SW")
 
         """
@@ -117,7 +117,11 @@ class FindFrame(tk.Frame):
 
     # go to the emotion's page processor
     def complete_task(self):
-        self.controller.show_page(-2)
         self.controller.frames[-2][1].update_emotion_list()
+        self.controller.show_page(-2)
+
+    def previous_page(self):
+        self.controller.show_page(4)
+        self.controller.selected_battery_serial_number = None
 
 

@@ -134,6 +134,7 @@ class DatabaseManager:
                     user_id INTEGER,
                     state_id INTEGER,
                     client_id INTEGER,
+                    picture LONGBLOB,
                     FOREIGN KEY (serial_number) REFERENCES batteries(serial_number) ON DELETE CASCADE,
                     FOREIGN KEY (work_type_id) REFERENCES works(work_type_id) ON DELETE CASCADE,
                     FOREIGN KEY (user_id) REFERENCES employees(user_id) ON DELETE CASCADE,

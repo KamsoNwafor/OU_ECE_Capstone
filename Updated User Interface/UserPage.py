@@ -44,10 +44,10 @@ class UserFrame(tk.Frame):
         self.forward_button.config(width=20, text="Forward")
         self.forward_button.grid(row=4, column=2, padx=10, pady=10, sticky="SE") # places forward button at the bottom right of screen
 
-        self.forward_button.bind("<Button-1>", self.user_selection)  # if a list item is highlighted, then the forward button is clicked, select it
+        self.forward_button.bind("<Button-1>", self.user_selection)  # if a list item is highlighted, and the forward button is clicked, select it
 
         self.back_button = tk.Button(master=self)
-        self.back_button.config(width=20, text="Back", command=lambda: controller.back_button()) # button to go to the previous page (warehouse page)
+        self.back_button.config(width=20, text="Back", command=lambda: self.previous_page()) # button to go to the previous page (warehouse page)
         self.back_button.grid(row=4, column=0, padx=10, pady=10, sticky="SW") # places back button at the bottom left of screen
 
         self.user_scrollbar = tk.Scrollbar(master=self) # creates scrollbar just in case there are a bunch of users shown
@@ -114,3 +114,6 @@ class UserFrame(tk.Frame):
         # self.users = self.local_cursor.fetchall()  # retrieves users in database
         self.rds_cursor.execute("""select user_id, first_name, last_name from employees""")  # retrieves all data related to employee table in database
         self.users = self.rds_cursor.fetchall()  # retrieves users in database
+
+    def previous_page(self):
+        self.controller.show_page(0)

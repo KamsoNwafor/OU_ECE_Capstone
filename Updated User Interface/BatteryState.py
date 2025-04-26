@@ -2,9 +2,9 @@ import tkinter as tk
 from Database import DatabaseManager as dbm
 
 # import the tk.Frame class that creates frames
-class StateSelectionFrame(tk.Frame):
+class BatteryStateFrame(tk.Frame):
     # store relative frame index number
-    frame_index = 3
+    frame_index = 10
 
     def __init__(self, master, controller):
         # initialise the imported class
@@ -40,8 +40,9 @@ class StateSelectionFrame(tk.Frame):
         # save the selected state's value
         self.controller.selected_state_id = self.state_list.get()
 
-        self.controller.frames[-3][1].image_preview()
-        self.controller.show_page(-3)
+        # load battery state action page
+        self.controller.frames[11][1].load_actions()
+        self.controller.show_page(11)
 
 
     def update_state_list(self):
@@ -76,8 +77,13 @@ class StateSelectionFrame(tk.Frame):
 
         # button to go to the previous logical page (receive page)
         self.back_button = tk.Button(master=self)
-        self.back_button.config(width=20, text="Back", command=lambda: self.controller.show_page(6))
+        self.back_button.config(width=20, text="Back", command=lambda: self.previous_page())
 
         # places back button at the bottom left of screen
         self.back_button.grid(row=index, column=0, padx=10, pady=10, sticky="SW")
+
+    def previous_page(self):
+
+        self.controller.show_page(6)
+        self.controller.selected_state_id = None
 

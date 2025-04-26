@@ -38,7 +38,7 @@ class PictureFrame(tk.Frame):
 
         # creates button to go to the next page (report page) and places it at the bottom right of screen
         self.forward_button = tk.Button(master=self)
-        self.forward_button.config(width=20, text="Forward", command=lambda: self.controller.forward_button())
+        self.forward_button.config(width=20, text="Forward", command=lambda: self.next_page())
         self.forward_button.grid(row=3, column=2, padx=10, pady=10, sticky="SE")
 
         # creates button to go retake picture
@@ -65,7 +65,6 @@ class PictureFrame(tk.Frame):
                 self.frame_rgb = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)  # Convert to RGB
                 self.image = Image.fromarray(self.frame_rgb)
                 self.image_tk = ImageTk.PhotoImage(image=self.image)
-                self.image_label.imgtk = self.image_tk  # Keep reference
                 self.image_label.configure(image=self.image_tk)
 
                 if not self.capture:
@@ -88,24 +87,28 @@ class PictureFrame(tk.Frame):
             filename = "captured_photo.jpg"
             cv2.imwrite(filename, cv2.cvtColor(self.frame, cv2.COLOR_RGB2BGR))  # Save the frame as an image
             print(f"Image saved as {filename}")
+            self.controller.selected_picture = Image.open(filename)
 
 
     def previous_page(self):
-        # if receive is selected, show receive page
-        if self.controller.selected_task_id == "2":
-            self.controller.show_page(6)
-        # if ship is selected, show ship page
-        elif self.controller.selected_task_id == "3":
-            self.controller.show_page(7)
+        # if receive or ship is selected, show battery status action page
+        if (self.controller.selected_task_id == "2"
+        or self.controller.selected_task_id == "3"):
+            self.controller.show_page(11)
+            self.controller.selected_actions = None
         # if move is selected, show move page
         elif self.controller.selected_task_id == "4":
-            self.controller.show_page(8)
+            self.controller.show_page(7)
         # if take picture is selected, go to item selection page
         elif self.controller.selected_task_id == "20":
             self.controller.show_page(4)
-        # if intake new item is selected, go to item selection page
+        # if intake new item is selected, go to new item page
         elif self.controller.selected_task_id == "21":
             self.controller.show_page(9)
 
-    def update_preview(self):
-        pass
+        self.controller.selected_picture = None
+
+    def next_page(self):
+        self.controller.frames[-2][1].update_emotion_list()
+        self.controller.forward_button()
+

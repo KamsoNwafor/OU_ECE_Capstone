@@ -42,7 +42,7 @@ class PasswordFrame(tk.Frame):
         self.forward_button.grid(row=2, column=2, padx=10, pady=10, sticky="SE") # places forward button at the bottom right of screen
 
         self.back_button = tk.Button(master=self) # button to go to the previous page (username page)
-        self.back_button.config(width=20, text="Back", command=lambda: controller.back_button())
+        self.back_button.config(width=20, text="Back", command=lambda: self.previous_page())
         self.back_button.grid(row=2, column=0, padx=10, pady=10, sticky="SW") # places back button at the bottom left of screen
 
     def password_update(self): # tries to update password, or tell user that password is wrong
@@ -78,3 +78,7 @@ class PasswordFrame(tk.Frame):
         self.password_tuple = self.rds_cursor.fetchall()  # retrieves password in database
 
         self.correct_password = self.password_tuple[0][0] # stores correct password
+
+    def previous_page(self):
+        self.controller.show_page(1)
+        self.controller.selected_user_id = None

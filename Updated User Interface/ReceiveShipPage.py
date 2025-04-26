@@ -2,7 +2,7 @@ import tkinter as tk
 from Database import DatabaseManager as dbm
 
 # import the tk.Frame class that creates frames
-class ReceiveFrame (tk.Frame):
+class ReceiveShipFrame (tk.Frame):
     chosen_client = None
     frame_index = 6
 
@@ -44,6 +44,7 @@ class ReceiveFrame (tk.Frame):
         self.client_bar.config(textvariable=self.client)
         self.client_bar.bind('<KeyRelease>', self.check_key)
 
+        # don't initialise buttons yet, as their positions could depend on the length of the button list
         self.forward_button = None
         self.back_button = None
 
@@ -69,7 +70,10 @@ class ReceiveFrame (tk.Frame):
         self.client_status.config(text="Customer or Supplier?")
         self.client_status.grid(row=0, column=0)
 
+        # a variable to track whether the client is a supplier or a customer
         self.status = None
+
+        # variable to create buttons in list
         self.status_option = None
 
         # String Variable to store client options
@@ -140,8 +144,8 @@ class ReceiveFrame (tk.Frame):
 
     # load the take picture page.
     def complete_task(self):
-        self.controller.frames[7][1].update_state_list()
-        self.controller.show_page(7)
+        self.controller.frames[10][1].update_state_list()
+        self.controller.show_page(10)
 
     def update_client_task_list(self):
         # searches for the client roles in the database
@@ -167,14 +171,21 @@ class ReceiveFrame (tk.Frame):
             self.status_option.grid(row=index, column=0, padx=10, pady=10, sticky="NEWS")
             index += 1
 
-        # creates button to go to the next page (selected task), places forward button at the bottom right of screen
+        # creates button to go to the next page (client selection page), places forward button at the bottom right of screen
         # if a list item is highlighted, then the forward button is clicked, select it
         self.forward_button = tk.Button(master=self)
         self.forward_button.config(width=20, text="Forward")
         self.forward_button.grid(row=index, column=3, padx=10, pady=10, sticky="SE")
         self.forward_button.bind("<Button-1>", self.client_selection)
 
-        # button to go to the previous page (task selection page), places back button at the bottom left of screen
+        # button to go to the previous page (item selection page), places back button at the bottom left of screen
         self.back_button = tk.Button(master=self)
-        self.back_button.config(width=20, text="Back", command=lambda: self.controller.show_page(4))
+        self.back_button.config(width=20, text="Back", command=lambda: self.previous_page())
         self.back_button.grid(row=index, column=0, padx=10, pady=10, sticky="SW")
+
+    def previous_page(self):
+        # loads previous page (item selection)
+        self.controller.show_page(4)
+
+        # removes battery serial number that's stored
+        self.controller.selected_battery_serial_number = None
