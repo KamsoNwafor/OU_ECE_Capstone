@@ -37,12 +37,14 @@ class BatteryStateFrame(tk.Frame):
         self.back_button = None
 
     def manage_option(self):
-        # save the selected state's value
-        self.controller.selected_state_id = self.state_list.get()
+        # make sure that a button was actually clicked
+        if self.state_list.get() != "0":
+            # save the selected state's value
+            self.controller.selected_state_id = self.state_list.get()
 
-        # load battery state action page
-        self.controller.frames[11][1].load_actions()
-        self.controller.show_page(11)
+            # load battery state action page
+            self.controller.frames[11][1].load_actions()
+            self.controller.show_page(11)
 
 
     def update_state_list(self):

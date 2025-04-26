@@ -120,8 +120,10 @@ class ItemSelectionFrame(tk.Frame):
         self.user_name.config(text="Selected User Name: " + employee_name)
 
     def battery_selection(self, event):
+        # if not trying to intake a new item
         if self.controller.selected_task_id != "21":
-            if self.filtered_batteries:
+            # if a valid battery was clicked
+            if self.filtered_batteries and self.battery_list.curselection():
                 # returns the index of the item chosen as listed in the original list
                 index = self.battery_list.curselection()[0]
 

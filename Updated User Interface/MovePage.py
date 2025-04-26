@@ -106,24 +106,26 @@ class MoveFrame (tk.Frame):
             self.location_list.insert('end', item)
 
     def location_selection(self, event):
-        # returns the index of the item chosen as listed in the original list
-        index = self.location_list.curselection()[0]
+        # makes sure a valid location was actually selected
+        if self.filtered_locations and self.location_list.curselection():
+            # returns the index of the item chosen as listed in the original list
+            index = self.location_list.curselection()[0]
 
-        # if a location in the list is selected, then update the text variable with the name selected
-        for i in self.location_list.curselection():
-            self.location.set(self.location_list.get(i))
+            # if a location in the list is selected, then update the text variable with the name selected
+            for i in self.location_list.curselection():
+                self.location.set(self.location_list.get(i))
 
-        # Return the location of the given index (this accounts for duplicates)
-        self.new_location = self.filtered_locations[index]
-        self.controller.selected_location_id = self.filtered_location_ids[index]
+            # Return the location of the given index (this accounts for duplicates)
+            self.new_location = self.filtered_locations[index]
+            self.controller.selected_location_id = self.filtered_location_ids[index]
 
-        # go to the picture taking page
-        self.controller.frames[8][1].image_preview()
-        self.controller.show_page(8)
+            # go to the picture taking page
+            self.controller.frames[8][1].image_preview()
+            self.controller.show_page(8)
 
-        # filters the list, so if location comes back from next page, they see only 1 item
-        data = [self.new_location]
-        self.list_update(data)
+            # filters the list, so if location comes back from next page, they see only 1 item
+            data = [self.new_location]
+            self.list_update(data)
 
     def load_locations(self):
         self.rds_cursor.execute("SELECT * FROM locations")

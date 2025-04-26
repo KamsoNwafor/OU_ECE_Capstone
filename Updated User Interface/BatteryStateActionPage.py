@@ -35,10 +35,11 @@ class BatteryStateActionFrame(tk.Frame):
         self.checks = []
 
     def finalise_list(self):
-        self.controller.selected_actions = self.selected_actions
-
-        self.controller.frames[8][1].image_preview()
-        self.controller.show_page(8)
+        # make sure the user clicked that they did something
+        if self.selected_actions:
+            self.controller.selected_actions = self.selected_actions
+            self.controller.frames[8][1].image_preview()
+            self.controller.show_page(8)
 
 
     def load_actions(self):
@@ -53,8 +54,9 @@ class BatteryStateActionFrame(tk.Frame):
                                 SELECT work_type_id, work_type_name
                                 FROM works
                                 WHERE parent_work_type_id = ?
+                                OR work_type_id = 5
                                 ORDER BY work_type_id
-                                """, (self.battery_action,))
+                                """, (self.battery_action,)) # work_type_id = 5 is the monitor battery status command
 
         self.actions = self.rds_cursor.fetchall()
 

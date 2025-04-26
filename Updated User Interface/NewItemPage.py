@@ -74,13 +74,17 @@ class NewItemFrame (tk.Frame):
         self.desc.set("")
 
     def manage_details(self):
-        self.controller.selected_battery_serial_number = self.serial.get()
-        self.controller.selected_part_number = self.part.get()
-        self.controller.selected_item_type = self.item_type.get()
-        self.controller.input_battery_desc = self.desc.get()
+        if (self.serial.get() != ""
+        and self.part.get() != ""
+        and self.item_type.get() != ""
+        and self.desc.get() != ""):
+            self.controller.selected_battery_serial_number = self.serial.get()
+            self.controller.selected_part_number = self.part.get()
+            self.controller.selected_item_type = self.item_type.get()
+            self.controller.input_battery_desc = self.desc.get()
 
-        self.controller.frames[8][1].image_preview()
-        self.controller.show_page(8)
+            self.controller.frames[8][1].image_preview()
+            self.controller.show_page(8)
 
     def set_description(self):
         self.desc.set(self.controller.input_battery_desc)

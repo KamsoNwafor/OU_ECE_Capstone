@@ -37,14 +37,16 @@ class TaskSelectionFrame(tk.Frame):
         self.back_button = None
 
     def manage_option(self):
-        # save the selected task's value (work_type_id)
-        self.controller.selected_task_id = self.task_list.get()
+        # make sure that a button was actually clicked
+        if self.task_list.get() != "0":
+            # save the selected task's value (work_type_id)
+            self.controller.selected_task_id = self.task_list.get()
 
-        # loads battery list and updates the user on the battery selection page
-        self.controller.frames[4][1].load_battery_list()
-        self.controller.frames[4][1].bind_double_click()
-        self.controller.frames[4][1].update_user()
-        self.controller.show_page(4)
+            # loads battery list and updates the user on the battery selection page
+            self.controller.frames[4][1].load_battery_list()
+            self.controller.frames[4][1].bind_double_click()
+            self.controller.frames[4][1].update_user()
+            self.controller.show_page(4)
 
     def update_task_list(self):
 

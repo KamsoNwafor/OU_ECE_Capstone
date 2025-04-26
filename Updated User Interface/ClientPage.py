@@ -115,23 +115,25 @@ class ClientFrame (tk.Frame):
             self.client_list.insert('end', item)
 
     def client_selection(self, event):
-        # returns the index of the item chosen as listed in the original list
-        index = self.client_list.curselection()[0]
+        # makes sure a valid client was selected
+        if self.filtered_clients and self.client_list.curselection():
+            # returns the index of the item chosen as listed in the original list
+            index = self.client_list.curselection()[0]
 
-        # if a client in the list is selected, then update the text variable with the name selected
-        for i in self.client_list.curselection():
-            self.client.set(self.client_list.get(i))
+            # if a client in the list is selected, then update the text variable with the name selected
+            for i in self.client_list.curselection():
+                self.client.set(self.client_list.get(i))
 
-        # Return the client of the given index (this accounts for duplicates)
-        self.chosen_client = self.filtered_clients[index]
-        self.controller.selected_client_id = self.filtered_client_ids[index]
+            # Return the client of the given index (this accounts for duplicates)
+            self.chosen_client = self.filtered_clients[index]
+            self.controller.selected_client_id = self.filtered_client_ids[index]
 
-        # show the page for the corresponding task selected on the previous page
-        self.complete_task()
+            # show the page for the corresponding task selected on the previous page
+            self.complete_task()
 
-        # filters the list, so if client comes back from next page, they see only 1 item
-        data = [self.chosen_client]
-        self.list_update(data)
+            # filters the list, so if client comes back from next page, they see only 1 item
+            data = [self.chosen_client]
+            self.list_update(data)
 
     # finds all clients in database and saves them as the original list of clients
     def load_client_list(self, value):

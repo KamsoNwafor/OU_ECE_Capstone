@@ -37,12 +37,14 @@ class EmotionSelectionFrame(tk.Frame):
         self.back_button = None
 
     def manage_option(self):
-        # save the selected emotion's value
-        self.controller.selected_emotion = self.emotion_list.get()
+        # make sure that a button was actually clicked
+        if self.emotion_list.get() != "0":
+            # save the selected emotion's value
+            self.controller.selected_emotion = self.emotion_list.get()
 
-        # loads battery list and updates the user on the battery selection page
-        self.controller.frames[-1][1].load_report()
-        self.controller.show_page(-1)
+            # loads battery list and updates the user on the battery selection page
+            self.controller.frames[-1][1].load_report()
+            self.controller.show_page(-1)
 
     def previous_page(self):
         # if find is selected, show find page

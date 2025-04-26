@@ -113,6 +113,7 @@ class PictureFrame(tk.Frame):
 
 
     def next_page(self):
-        self.controller.frames[-2][1].update_emotion_list()
-        self.controller.show_page(-2)
+        if not self.cam.isOpened():
+            self.controller.frames[-2][1].update_emotion_list()
+            self.controller.show_page(-2)
 

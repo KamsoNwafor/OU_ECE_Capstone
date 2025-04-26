@@ -91,7 +91,8 @@ class UserFrame(tk.Frame):
             self.user_list.insert('end', item)
 
     def user_selection(self, event):
-        if self.user_list.curselection():
+        # make sure that a valid user was clicked
+        if self.filtered_users and self.user_list.curselection():
             index = self.user_list.curselection()[0]  # returns the index of the item chosen
 
             for i in self.user_list.curselection(): # curselection is "cursor selection"
