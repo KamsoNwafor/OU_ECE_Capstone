@@ -77,6 +77,20 @@ class DatabaseManager:
                 );
                 """, # this table stores the ba
                 """
+                CREATE TABLE IF NOT EXISTS client_status (
+                    client_status_id INTEGER PRIMARY KEY AUTO_INCREMENT,
+                    client_status_desc TEXT
+                );
+                """,
+                """
+                CREATE TABLE if not exists clients(
+                    client_id integer PRIMARY KEY AUTO_INCREMENT,
+                    client_desc TEXT,
+                    client_status_id integer,
+                    FOREIGN KEY (client_status_id) REFERENCES client_status (client_status_id) ON DELETE CASCADE
+                );
+                """,
+                """
                 CREATE TABLE IF NOT EXISTS works (
                     work_type_id INTEGER PRIMARY KEY AUTO_INCREMENT,
                     work_type_name TEXT,
@@ -112,12 +126,6 @@ class DatabaseManager:
                 );
                 """,
                 """
-                CREATE TABLE if not exists suppliers(
-                    supplier_id integer PRIMARY KEY AUTO_INCREMENT,
-                    supplier_desc TEXT
-                );
-                """,
-                """
                 CREATE TABLE IF NOT EXISTS requests (
                     request_id INTEGER PRIMARY KEY AUTO_INCREMENT,
                     request_time TIMESTAMP UNIQUE,
@@ -125,12 +133,12 @@ class DatabaseManager:
                     work_type_id INTEGER,
                     user_id INTEGER,
                     state_id INTEGER,
-                    supplier_id INTEGER,
+                    client_id INTEGER,
                     FOREIGN KEY (serial_number) REFERENCES batteries(serial_number) ON DELETE CASCADE,
                     FOREIGN KEY (work_type_id) REFERENCES works(work_type_id) ON DELETE CASCADE,
                     FOREIGN KEY (user_id) REFERENCES employees(user_id) ON DELETE CASCADE,
                     FOREIGN KEY (state_id) REFERENCES battery_state(state_id) ON DELETE CASCADE,
-                    FOREIGN KEY (supplier_id) REFERENCES suppliers (supplier_id) ON DELETE CASCADE
+                    FOREIGN KEY (client_id) REFERENCES clients (client_id) ON DELETE CASCADE
                 );
                 """,
                 """
@@ -155,7 +163,6 @@ class DatabaseManager:
 
     @classmethod
     def add_mock_data (cls, db_conn):
-
         try:
             # Establish connection to Mariadb database
             conn = db_conn
@@ -182,6 +189,38 @@ class DatabaseManager:
 
             cls.save_changes(conn)
 
+            client_status = [
+                (1, "Suppliers"),
+                (2, "Customers")
+            ]
+
+            for client_status_id, client_status_desc in client_status:
+                cursor.execute("""
+                    INSERT INTO client_status (client_status_id, client_status_desc)
+                    VALUES (?, ?)
+                """, (client_status_id, client_status_desc))
+
+            cls.save_changes(conn)
+
+            clients = [
+                (1, None, 1),
+                (2, "Battery New", 1),
+                (3, "Loyal", 2),
+                (4, "High Income", 2),
+                (5, "Thrifty", 2),
+                (6, "Old Reliable", 1),
+                (7, "Never Death Row", 1)
+            ]
+
+            # Insert each client into the client table
+            for client_id, client_desc, client_status_id in clients:
+                cursor.execute("""
+                               INSERT INTO clients (client_id, client_desc, client_status_id)
+                               VALUES (?, ?, ?)
+                               """, (client_id, client_desc, client_status_id))
+
+            cls.save_changes(conn)
+
             works = [
                 (1, "Find", None),
                 (2, "Receive", 1),
@@ -202,7 +241,8 @@ class DatabaseManager:
                 (17, "Shred (pieces)", 8),
                 (18, "Shred (powder)", 8),
                 (19, "Make new battery", 8),
-                (20, "Take Picture", None)
+                (20, "Take Picture", None),
+                (21, "Intake New Item", None)
             ]
 
             for work_type_id, work_type_name, parent_work_type_id in works:
@@ -296,24 +336,8 @@ class DatabaseManager:
 
             cls.save_changes(conn)
 
-            suppliers = [
-                (1, None),
-                (2, "Battery New"),
-                (3, "Old Reliable"),
-                (4, "Never Death Row")
-            ]
-
-            # Insert each supplier into the supplier table
-            for supplier_id, supplier_desc in suppliers:
-                cursor.execute("""
-                                INSERT INTO suppliers (supplier_id, supplier_desc)
-                                VALUES (?, ?)
-                                """, (supplier_id, supplier_desc))
-
-            cls.save_changes(conn)
-
         except mariadb.Error as e:
-            print(f"Error: {e}")
+           print(f"Error: {e}")
 
     @classmethod
     def setup_local_database(cls):
@@ -340,13 +364,15 @@ class DatabaseManager:
         commands = [
             """drop table if exists reports;""",
             """drop table if exists requests;""",
-            """drop table if exists customers;""",
-            """drop table if exists suppliers;""",
             """drop table if exists batteries;""",
             """drop table if exists locations;""",
             """drop table if exists employees;""",
             """drop table if exists works;""",
             """drop table if exists battery_state;""",
+            """drop table if exists suppliers;""",
+            """drop table if exists customers;""",
+            """drop table if exists clients;""",
+            """drop table if exists client_status;""",
             """drop table if exists warehouses;"""
         ]
 

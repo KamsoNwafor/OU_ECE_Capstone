@@ -23,7 +23,7 @@ class RequestFrame(tk.Frame):
         self.work_type_id = None
         self.user_id = None
         self.state_id = 1
-        self.supplier_id = 1
+        self.client_id = 1
 
         # variables to write a report
         self.emotion = None
@@ -34,7 +34,7 @@ class RequestFrame(tk.Frame):
         self.result = None
         self.employee = None
         self.battery_state = None
-        self.supplier = None
+        self.client = None
         self.battery_desc = None
 
         # set title of excel file to save reports in
@@ -118,8 +118,8 @@ class RequestFrame(tk.Frame):
         if self.controller.selected_state_id:
             self.state_id = self.controller.selected_state_id
 
-        if self.controller.selected_supplier_id:
-            self.supplier_id = self.controller.selected_supplier_id
+        if self.controller.selected_client_id:
+            self.client_id = self.controller.selected_client_id
 
         self.rds_cursor.execute("""SELECT part_description FROM batteries where serial_number = ?""",
                                 (self.serial_num,))
@@ -130,17 +130,17 @@ class RequestFrame(tk.Frame):
         self.result = self.rds_cursor.fetchall()
         self.employee = f"{self.result[0][0]} {self.result[0][1]}"
 
-        self.rds_cursor.execute("""SELECT supplier_desc FROM suppliers where supplier_id = ?""",
-                                (self.supplier_id,))
+        self.rds_cursor.execute("""SELECT client_desc FROM clients where client_id = ?""",
+                                (self.client_id,))
         self.result = self.rds_cursor.fetchall()
-        self.supplier = self.result[0][0]
+        self.client = self.result[0][0]
 
         # if find is selected
         if self.work_type_id == "1":
             self.report.set(f"{self.employee} found {self.battery_desc}. Now {self.employee} is {self.emotion}")
         # if receive is selected
         elif self.work_type_id == "2":
-            self.report.set(f"{self.employee} received {self.battery_desc} from {self.supplier}. Now {self.employee} is {self.emotion}")
+            self.report.set(f"{self.employee} received {self.battery_desc} from {self.client}. Now {self.employee} is {self.emotion}")
         # if ship is selected
         elif self.work_type_id == "3":
             pass
@@ -162,7 +162,7 @@ class RequestFrame(tk.Frame):
                                  self.work_type_id,
                                  self.user_id,
                                  self.state_id,
-                                 self.supplier_id))
+                                 self.client_id))
         
         self.rds_cursor.execute(""" INSERT INTO reports VALUES(?, ?, ?); """,
                                 (self.request_id,

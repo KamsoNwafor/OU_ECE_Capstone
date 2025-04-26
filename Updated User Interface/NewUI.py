@@ -10,6 +10,7 @@ from ReceivePage import ReceiveFrame
 from PicturePage import PictureFrame
 from EmotionSelectionPage import EmotionSelectionFrame
 from RequestPage import RequestFrame
+from BatteryState import StateSelectionFrame
 
 # import the tk.Tk class that creates windows
 class App (tk.Tk):
@@ -28,7 +29,7 @@ class App (tk.Tk):
         self.selected_task_id = None
         self.selected_battery_serial_number = None
         self.selected_state_id = None
-        self.selected_supplier_id = None
+        self.selected_client_id = None
         self.selected_emotion = None
 
         # iterating through a tuple consisting of the different page layouts
@@ -40,9 +41,10 @@ class App (tk.Tk):
                   ItemSelectionFrame,  #4
                   FindFrame,  #5
                   ReceiveFrame, #6
-                  PictureFrame, #7
-                  EmotionSelectionFrame,  #8
-                  RequestFrame): #9
+                  StateSelectionFrame, #7
+                  PictureFrame, #8
+                  EmotionSelectionFrame,  #9
+                  RequestFrame): #10
             # initializing frame of that object from relevant page with for loop
             frame = F(container, self)
             frame_tuple = (index, frame)
@@ -78,8 +80,8 @@ class App (tk.Tk):
 #dbm.setup_local_database()
 #dbm.close_connection(dbm.local_conn)
 dbm.setup_rds_database()
+#dbm.close_connection(dbm.rds_conn)
 #dbm.clear_everything()
-
 
 root = App()
 root.title("Spiers New Technologies")

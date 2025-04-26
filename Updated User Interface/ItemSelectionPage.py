@@ -148,7 +148,7 @@ class ItemSelectionFrame(tk.Frame):
             self.controller.show_page(5)
         # if receive is selected, show receive page
         elif self.controller.selected_task_id == "2":
-            self.controller.frames[6][1].load_supplier_list()
+            self.controller.frames[6][1].update_client_task_list()
             self.controller.show_page(6)
         # if ship is selected, show ship page
         elif self.controller.selected_task_id == "3":
@@ -158,15 +158,15 @@ class ItemSelectionFrame(tk.Frame):
         elif self.controller.selected_task_id == "4":
             # self.controller.show_page(8)
             pass
-        # if update battery status is selected, show update battery status page
-        elif self.controller.selected_task_id == "5":
-            # self.controller.show_page(9)
-            pass
         # if take picture is selected, show take picture page
         elif self.controller.selected_task_id == "20":
             # self.controller.show_page(10)
             self.controller.frames[7][1].image_preview()
             self.controller.show_page(7)
+        # if intake new item is selected, show update battery status page
+        elif self.controller.selected_task_id == "21":
+            # self.controller.show_page(9)
+            pass
 
     def load_battery_list(self):
         # finds all battery serial numbers in database and saves them as the original list of batteries

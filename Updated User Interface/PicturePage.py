@@ -100,12 +100,12 @@ class PictureFrame(tk.Frame):
         # if move is selected, show move page
         elif self.controller.selected_task_id == "4":
             self.controller.show_page(8)
-        # if update battery status is selected, show update battery status page
-        elif self.controller.selected_task_id == "5":
-            self.controller.show_page(9)
         # if take picture is selected, go to item selection page
         elif self.controller.selected_task_id == "20":
             self.controller.show_page(4)
+        # if intake new item is selected, go to item selection page
+        elif self.controller.selected_task_id == "21":
+            self.controller.show_page(9)
 
     def update_preview(self):
         pass

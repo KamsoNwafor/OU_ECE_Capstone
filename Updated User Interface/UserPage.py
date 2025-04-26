@@ -26,7 +26,7 @@ class UserFrame(tk.Frame):
 
         self.user_name = tk.Label(master = self) # label asking for username
         self.user_name.config(text="Username")
-        self.user_name.grid(row=1, column = 0) # places this label in the centre-left part of screen
+        self.user_name.grid(row=0, column = 1) # places this label in the centre-left part of screen
 
         self.employee = tk.StringVar()  # create text entry variable
         self.employee.set("")  # set text entry variable as entry
@@ -38,11 +38,11 @@ class UserFrame(tk.Frame):
 
         self.missing_name = tk.Label(master = self)
         self.missing_name.config (text = "If your name is not listed, please contact your supervisor") # informs the user to contact the supervisor if their name is not in the drop down
-        self.missing_name.grid(row = 3, column = 2) # places at the bottom of screen
+        self.missing_name.grid(row = 3, column = 1) # places at the bottom of screen
 
         self.forward_button = tk.Button(master=self) # button to go to the next page (password page)
         self.forward_button.config(width=20, text="Forward")
-        self.forward_button.grid(row=4, column=3, padx=10, pady=10, sticky="SE") # places forward button at the bottom right of screen
+        self.forward_button.grid(row=4, column=2, padx=10, pady=10, sticky="SE") # places forward button at the bottom right of screen
 
         self.forward_button.bind("<Button-1>", self.user_selection)  # if a list item is highlighted, then the forward button is clicked, select it
 

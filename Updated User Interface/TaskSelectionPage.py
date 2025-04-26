@@ -71,8 +71,7 @@ class TaskSelectionFrame(tk.Frame):
             self.task_option.config(text=task[1], variable=self.task_list, value=task[0])
 
             # place the choices in the centre, one after the other
-            self.task_option.grid(row=index, column=1, padx=10, pady=10,
-                                  sticky="NEWS")
+            self.task_option.grid(row=index, column=1, padx=10, pady=10, sticky="NEWS")
             index += 1
 
         # button to go to the next page (item selection page)
