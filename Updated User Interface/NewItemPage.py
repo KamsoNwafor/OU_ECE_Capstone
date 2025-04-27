@@ -96,10 +96,12 @@ class NewItemFrame(tk.Frame):
             self.controller.selected_part_number = self.part.get()
             self.controller.selected_item_type = self.item_type.get()
             self.controller.input_battery_desc = self.desc.get()
-            # Prepare the image preview on the next page (index 8)
-            self.controller.frames[8][1].image_preview()
-            # Navigate to the image preview page
-            self.controller.show_page(8)
+
+            # Prepare Move Page to set location
+            self.controller.frames[7][1].load_locations()
+            self.controller.frames[7][1].load_current_location()
+            # Navigate to Move Page
+            self.controller.show_page(7)
 
     def set_description(self):
         # Set the description field to the input battery description from the controller

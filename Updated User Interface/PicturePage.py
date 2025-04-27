@@ -5,7 +5,7 @@ from PIL import ImageTk, Image
 import cv2
 
 class PictureFrame(tk.Frame):
-    frame_index = 7  # will be 10 on the final UI
+    frame_index = 8
 
     def __init__(self, master, controller):
         tk.Frame.__init__(self, master, bg="#fafafa")  # Set soft background color
@@ -20,6 +20,7 @@ class PictureFrame(tk.Frame):
         self.capture = False
 
         self.image = None
+        self.image_tk = None
         self.max_width = math.floor(800 / 3)
         self.max_height = math.floor(480 / 3)
         
@@ -91,23 +92,20 @@ class PictureFrame(tk.Frame):
             self.controller.selected_picture = Image.open(self.filename)
 
     def previous_page(self):
+        self.cam.release()
         if self.controller.selected_task_id == "2":
             self.controller.show_page(11)
             self.controller.selected_actions = None
         elif self.controller.selected_task_id == "3":
             self.controller.show_page(6)
             self.controller.selected_client_id = None
-        elif self.controller.selected_task_id == "4":
+        elif (self.controller.selected_task_id == "4"
+        or self.controller.selected_task_id == "21"):
             self.controller.show_page(7)
             self.controller.selected_location_id = None
         elif self.controller.selected_task_id == "20":
             self.controller.show_page(4)
             self.controller.selected_battery_serial_number = None
-        elif self.controller.selected_task_id == "21":
-            self.controller.show_page(9)
-            self.controller.selected_part_number = None
-            self.controller.selected_item_type = None
-            self.controller.input_battery_desc = None
 
     def next_page(self):
         if not self.cam.isOpened():

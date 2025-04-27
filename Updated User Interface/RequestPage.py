@@ -241,6 +241,7 @@ class RequestFrame(tk.Frame):
                           + f"Serial Number is {self.serial_num}.\n"
                           + f"Part Number is {self.part_num}.\n"
                           + f"Item Type is {self.item_type}.\n"
+                          + f"Location is {self.new_location}.\n"
                           + f"Now {self.employee} is {self.emotion}.")
         
         self.report_text.delete("1.0", tk.END)  # Clear existing text
@@ -253,20 +254,11 @@ class RequestFrame(tk.Frame):
                                      self.part_num,
                                      self.item_type,
                                      self.battery_desc,
-                                     None,
+                                     self.new_location_id,
                                      self.picture_data))
             dbm.save_changes(self.rds_conn)
-            
-        elif self.work_type_id == "4":
-            self.rds_cursor.execute("""
-            UPDATE batteries
-            SET location = ?
-            WHERE serial_number = ?
-            """, (self.new_location_id, self.serial_num))
 
-            dbm.save_changes(self.rds_conn)
-
-        if (self.state_id == "1"
+        elif (self.state_id == "1"
         and self.picture):
             self.rds_cursor.execute("""
             UPDATE batteries
