@@ -262,7 +262,7 @@ class RequestFrame(tk.Frame):
                                      self.item_type,
                                      self.battery_desc,
                                      None,
-                                     self.picture))
+                                     self.picture_data))
         elif self.work_type_id == "4":
             self.rds_cursor.execute("""
             UPDATE batteries
@@ -278,7 +278,7 @@ class RequestFrame(tk.Frame):
             UPDATE batteries
             SET picture = ?
             WHERE serial_number = ?
-            """, (self.picture, self.serial_num))
+            """, (self.picture_data, self.serial_num))
 
             dbm.save_changes(self.rds_conn)
 
