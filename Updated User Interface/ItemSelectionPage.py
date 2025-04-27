@@ -37,8 +37,9 @@ class ItemSelectionFrame(tk.Frame):
         self.battery_name.grid(row=1, column=1, pady=(5, 5))
 
         # Battery entry
-        self.battery = None
-        self.battery_bar = ttk.Entry(content)
+        self.battery = tk.StringVar()
+        self.battery.set("")
+        self.battery_bar = ttk.Entry(content, textvariable=self.battery)
         self.battery_bar.grid(row=2, column=1, pady=5)
         self.battery_bar.bind('<KeyRelease>', self.check_key)
 
@@ -145,11 +146,6 @@ class ItemSelectionFrame(tk.Frame):
         self.rds_cursor.execute("select serial_number, part_description from batteries")
         self.batteries = self.rds_cursor.fetchall()
 
-        # Battery entry
-        self.battery = tk.StringVar()
-        self.battery.set("")
-        self.battery_bar.config(textvariable=self.battery)
-
     def bind_double_click(self):
         # Bind double-click to battery selection for tasks other than new item intake
         if self.controller.selected_task_id != "21":
@@ -159,6 +155,3 @@ class ItemSelectionFrame(tk.Frame):
         # Navigate back to the task selection page (index 3) and clear the selected task
         self.controller.show_page(3)
         self.controller.selected_task_id = None
-        self.battery = None
-        self.filtered_battery_ids = []
-        self.list_update(self.filtered_battery_ids)
