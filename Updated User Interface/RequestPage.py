@@ -254,12 +254,26 @@ class RequestFrame(tk.Frame):
                                      self.item_type,
                                      self.battery_desc,
                                      None,
-                                     self.picture))
+                                     self.picture_data))
+            dbm.save_changes(self.rds_conn)
+            
+        elif self.work_type_id == "4":
+            self.rds_cursor.execute("""
+            UPDATE batteries
+            SET location = ?
+            WHERE serial_number = ?
+            """, (self.new_location_id, self.serial_num))
+
             dbm.save_changes(self.rds_conn)
 
-        if self.state_id == "1" and self.picture:
-            self.rds_cursor.execute("UPDATE batteries SET picture = %s WHERE serial_number = %s",
-                                    (self.picture, self.serial_num))
+        if (self.state_id == "1"
+        and self.picture):
+            self.rds_cursor.execute("""
+            UPDATE batteries
+            SET picture = ?
+            WHERE serial_number = ?
+            """, (self.picture_data, self.serial_num))
+
             dbm.save_changes(self.rds_conn)
 
         self.rds_cursor.execute("INSERT INTO requests VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",

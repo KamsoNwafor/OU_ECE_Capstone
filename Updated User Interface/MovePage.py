@@ -151,8 +151,12 @@ class MoveFrame(tk.Frame):
         self.rds_cursor.execute("SELECT * FROM locations WHERE location_id = %s", (self.old_location,))
         result = self.rds_cursor.fetchall()
 
-        self.old_location = result[0][1] if result else "Unknown"
-        self.old_location_label.config(text=f"Current Location is: {self.old_location}")
+        if self.old_location:
+            self.old_location = result[0][1]
+        else:
+            self.old_location = "No Location"
+        
+        self.old_location_label.config (text =f"Current Location is: {self.old_location}")
 
     def previous_page(self):
         self.controller.show_page(4)

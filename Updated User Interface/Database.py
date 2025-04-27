@@ -59,6 +59,17 @@ class DatabaseManager:
             sys.exit(1)
 
     @classmethod
+    def connect_rds(cls):
+        cls.rds_conn = cls.establish_connection(cls.rds_db_user, cls.rds_db_password, cls.rds_db_host, cls.rds_db_port,
+                                                cls.rds_db_name)
+        cls.rds_cursor = cls.rds_conn.cursor()
+    @classmethod
+    def connect_local(cls):
+        cls.local_conn = cls.establish_connection(cls.local_db_user, cls.local_db_password, cls.local_db_host,
+                                                  cls.local_db_port, cls.local_db_name)
+        cls.local_cursor = cls.local_conn.cursor()
+
+    @classmethod
     # Local Database setup
     def setup_mock_database(cls, db_conn):
         try:
