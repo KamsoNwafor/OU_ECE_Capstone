@@ -1,83 +1,82 @@
 import tkinter as tk
+from tkinter import ttk, messagebox
 from Database import DatabaseManager as dbm
 
-# TODO: Handle Password Value Error in password_check()
-
-# import the tk.Frame class that creates frames
 class PasswordFrame(tk.Frame):
     frame_index = 2
-
     is_correct_password = False
 
     def __init__(self, master, controller):
-        tk.Frame.__init__(self, master) # initialise the imported class
+        tk.Frame.__init__(self, master, bg="#fafafa")  # Set soft background color
+        self.controller = controller
 
-        self.controller = controller  # store an instance of controller in frame, easier to manage controller data
+        self.rds_conn = dbm.get_rds_conn()  # Connect to RDS database
+        self.rds_cursor = self.rds_conn.cursor()  # Create cursor to search through RDS database
 
-        # self.local_conn = dbm.get_local_conn()  # connect to local database
-        # self.local_cursor = self.local_conn.cursor()  # create cursor to search through local database
+        self.password_tuple = None  # All queries return tuples
+        self.correct_password = None  # Create a null variable to store the password string
 
-        self.rds_conn = dbm.get_rds_conn()  # connect to local database
-        self.rds_cursor = self.rds_conn.cursor()  # create cursor to search through local database
+        # Create header with title
+        header = tk.Frame(self, bg="#4CAF50")
+        header.pack(fill="x")
+        tk.Label(header, text="Step 3: Password Entry", font=("Roboto", 14, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(pady=15)
 
-        self.password_tuple = None # all queries return tuples
-        self.correct_password = None  # create a null variable to store the password string
+        # Create content frame
+        content = tk.Frame(self, bg="#f0f0f0", bd=1, relief="solid")
+        content.pack(pady=10, padx=10, fill="both", expand=True)
 
-        self.user_name = tk.Label(master=self) # store selected user from previous page
-        self.user_name.grid(row=0, column=1) # display selected warehouse on top centre side of screen
+        # Selected user label
+        self.user_name = tk.Label(content, text="", font=("Roboto", 12, "bold"), bg="#f0f0f0", fg="#212121")
+        self.user_name.grid(row=0, column=0, columnspan=2, pady=(10, 5))
 
-        self.user_password = tk.Label(master = self) # label asking for password
-        self.user_password.config(text="Password")
-        self.user_password.grid(row=1, column = 0) # places this label in the centre-left part of screen
+        # Password label
+        self.user_password = tk.Label(content, text="Password:", font=("Roboto", 11), bg="#f0f0f0", fg="#333333")
+        self.user_password.grid(row=1, column=0, pady=5, sticky="e")
 
-        self.password_text = tk.StringVar()  # create text input variable for password
-        self.password_text.set("")  # set password text input variable to be entry
+        # Password entry
+        self.password_text = tk.StringVar()
+        self.password_text.set("")
+        self.password_bar = ttk.Entry(content, textvariable=self.password_text, show="*")  # Font is set via TEntry style in app.py
+        self.password_bar.grid(row=1, column=1, pady=5, sticky="w")
 
-        self.password_bar = tk.Entry(master = self) # text entry bar for username
-        self.password_bar.config(textvariable=self.password_text, show = "*")
-        self.password_bar.grid(row=1, column=1) # places text entry bar to the right of "Name" label
+        # Navigation buttons
+        nav_frame = tk.Frame(content, bg="#f0f0f0")
+        nav_frame.grid(row=2, column=0, columnspan=2, pady=10)
 
-        self.forward_button = tk.Button(master=self) # button to go to the next page (task selection page)
-        self.forward_button.config(width=20, text="Forward", command=lambda: self.password_update()) # tries to update password, or tell user that password is wrong
-        self.forward_button.grid(row=2, column=2, padx=10, pady=10, sticky="SE") # places forward button at the bottom right of screen
+        self.back_button = ttk.Button(nav_frame, text="Back", style="Secondary.TButton", command=self.previous_page)
+        self.back_button.pack(side="left", padx=5)
 
-        self.back_button = tk.Button(master=self) # button to go to the previous page (username page)
-        self.back_button.config(width=20, text="Back", command=lambda: self.previous_page())
-        self.back_button.grid(row=2, column=0, padx=10, pady=10, sticky="SW") # places back button at the bottom left of screen
+        self.forward_button = ttk.Button(nav_frame, text="Forward", style="Primary.TButton", command=self.password_update)
+        self.forward_button.pack(side="left", padx=5)
 
-    def password_update(self): # tries to update password, or tell user that password is wrong
+    def password_update(self):
         self.password_check()
-
         if self.is_correct_password:
             self.controller.frames[3][1].update_task_list()
             self.controller.forward_button()
-        else: # still need to alert user that password is wrong
-            pass
-
-    def password_check (self): # check if password is correct
-        if self.password_text.get() == self.correct_password:
-            self.is_correct_password = True
         else:
+            messagebox.showerror("Incorrect Password", "The password you entered is incorrect. Please try again.", parent=self.controller)
+
+    def password_check(self):
+        try:
+            if self.password_text.get() == self.correct_password:
+                self.is_correct_password = True
+            else:
+                self.is_correct_password = False
+        except ValueError as e:
             self.is_correct_password = False
+            messagebox.showerror("Password Error", f"Error checking password: {str(e)}", parent=self.controller)
 
     def update_user(self):
-        # self.local_cursor.execute("""select first_name, last_name, warehouse_id from employees where user_id = ?""", (self.controller.selected_user_id,))
-        # result = self.local_cursor.fetchall()
-
         self.rds_cursor.execute("select first_name, last_name from employees where user_id = ?", (self.controller.selected_user_id,))
-        result = self.rds_cursor.fetchall() # get user data from user data
-
+        result = self.rds_cursor.fetchall()
         employee_name = f"{result[0][0]} {result[0][1]}"
-        self.user_name.config(text="Selected User Name: " + employee_name) # display previously selected username
+        self.user_name.config(text="Selected User: " + employee_name)
 
     def load_correct_password(self):
-        # self.local_cursor.execute("select password from employees where user_id = ?", (self.controller.selected_user_id,))  # retrieves employee password based on user id
-        # self.password_tuple = self.local_cursor.fetchall()  # retrieves password in database
-
-        self.rds_cursor.execute("select password from employees where user_id = ?", (self.controller.selected_user_id,))  # retrieves employee password based on user id
-        self.password_tuple = self.rds_cursor.fetchall()  # retrieves password in database
-
-        self.correct_password = self.password_tuple[0][0] # stores correct password
+        self.rds_cursor.execute("select password from employees where user_id = ?", (self.controller.selected_user_id,))
+        self.password_tuple = self.rds_cursor.fetchall()
+        self.correct_password = self.password_tuple[0][0]
 
     def previous_page(self):
         self.controller.show_page(1)
