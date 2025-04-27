@@ -1,4 +1,7 @@
+
+
 import tkinter as tk
+from tkinter import ttk
 from Database import DatabaseManager as dbm
 
 # import the tk.Frame class that creates frames
@@ -8,7 +11,7 @@ class EmotionSelectionFrame(tk.Frame):
 
     def __init__(self, master, controller):
         # initialise the imported class
-        tk.Frame.__init__(self, master)
+        tk.Frame.__init__(self, master, bg="#fafafa")  # Set soft background color
 
         # connect to database and create cursor to traverse through database
         self.rds_conn = dbm.get_rds_conn()
@@ -20,14 +23,22 @@ class EmotionSelectionFrame(tk.Frame):
         # store an instance of controller in frame, easier to manage controller data
         self.controller = controller
 
+        # Create header with title
+        header = tk.Frame(self, bg="#4CAF50")
+        header.pack(fill="x")
+        tk.Label(header, text="Step 6: Emotion Selection", font=("Roboto", 14, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(pady=15)
+
+        # Create content frame
+        content = tk.Frame(self, bg="#f0f0f0", bd=1, relief="solid")
+        content.pack(pady=10, padx=10, fill="both", expand=True)
+
         # create instruction label and place instruction label in top-centre area of frame
-        self.emotion_label = tk.Label(master = self)
-        self.emotion_label.config(text = "How are you feeling")
-        self.emotion_label.grid(row = 0, column  = 1)
+        self.emotion_label = tk.Label(content, text="How are you feeling?", font=("Roboto", 12, "bold"), bg="#f0f0f0", fg="#212121")
+        self.emotion_label.grid(row=0, column=0, pady=(10, 5))
 
         # String Variable to store button options
         # Initial value must be different from options listed in order to avoid selection errors
-        self.emotion_list = tk.StringVar(master = self)
+        self.emotion_list = tk.StringVar(self)
         self.emotion_list.set("0")
 
         # emotion option tracker variable.
@@ -56,30 +67,25 @@ class EmotionSelectionFrame(tk.Frame):
 
     def update_emotion_list(self):
         # track number of emotions
+        content = self.emotion_label.master  # Get the content frame (parent of emotion_label)
         index = 1
         for emotion in self.emotions:
             # creates a single-selection list for each emotion
-            self.emotion_option = tk.Radiobutton(master=self)
-
-            # labels each choice by the relevant emotion and gives it a place value
-            self.emotion_option.config(text=emotion, variable=self.emotion_list, value=emotion)
+            self.emotion_option = ttk.Radiobutton(content, text=emotion, variable=self.emotion_list, value=emotion)
 
             # place the choices in the centre, one after the other
-            self.emotion_option.grid(row=index, column=1, padx=10, pady=10, sticky="NEWS")
+            self.emotion_option.grid(row=index, column=0, padx=10, pady=5, sticky="w")
             index += 1
+
+        # Navigation buttons
+        nav_frame = tk.Frame(content, bg="#f0f0f0")
+        nav_frame.grid(row=index, column=0, pady=10)
+
+        # button to go to the previous logical page (dependent on)
+        self.back_button = ttk.Button(nav_frame, text="Back", style="Secondary.TButton", command=self.previous_page)
+        self.back_button.pack(side="left", padx=5)
 
         # button to go to the next page (report page)
         # the button saves the emotion selected and goes to the next page (report page) when clicked
-        self.forward_button = tk.Button(master=self)
-        self.forward_button.config(width=20, text="Forward", command=lambda: self.manage_option())
-
-        # place the forward button at the bottom right of screen
-        self.forward_button.grid(row=index, column=2, padx=10, pady=10, sticky="SE")
-
-        # button to go to the previous logical page (dependent on)
-        self.back_button = tk.Button(master=self)
-        self.back_button.config(width=20, text="Back", command=lambda: self.previous_page())
-
-        # places back button at the bottom left of screen
-        self.back_button.grid(row=index, column=0, padx=10, pady=10, sticky="SW")
-
+        self.forward_button = ttk.Button(nav_frame, text="Forward", style="Primary.TButton", command=self.manage_option)
+        self.forward_button.pack(side="left", padx=5)
