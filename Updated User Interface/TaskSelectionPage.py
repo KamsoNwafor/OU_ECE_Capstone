@@ -16,8 +16,6 @@ class TaskSelectionFrame(tk.Frame):
 
         self.tasks = None
 
-        self.task_buttons = None
-
         # Create header with title
         header = tk.Frame(self, bg="#4CAF50")
         header.pack(fill="x")
@@ -62,12 +60,10 @@ class TaskSelectionFrame(tk.Frame):
 
         # Add radiobuttons to the content frame
         content = self.task_label.master  # Get the content frame (parent of task_label)
-        self.task_buttons = []
         index = 1
         for task in self.tasks:
             self.task_option = ttk.Radiobutton(content, text=task[1], variable=self.task_list, value=task[0])
             self.task_option.grid(row=index, column=0, padx=10, pady=5, sticky="w")
-            self.task_buttons.append(self.task_option)
             index += 1
 
         # Navigation buttons
@@ -81,8 +77,4 @@ class TaskSelectionFrame(tk.Frame):
         self.forward_button.pack(side="left", padx=5)
 
     def previous_page(self):
-        self.controller.show_page(1)
-        self.controller.selected_user_id = None
-
-        for task_button in self.task_buttons:
-            task_button.destroy()
+        self.controller.frames[2][1].previous_page()
