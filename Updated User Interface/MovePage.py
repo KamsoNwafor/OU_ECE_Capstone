@@ -24,8 +24,7 @@ class MoveFrame(tk.Frame):
         self.filtered_location_ids = []
 
         # create text entry variable and make it empty.
-        self.location = tk.StringVar()
-        self.location.set("")
+        self.location = None
 
         self.old_location = None
 
@@ -49,7 +48,7 @@ class MoveFrame(tk.Frame):
 
         # creates text entry bar for location, places text entry bar to the right of "location Name" label
         # sets the text in entry bar to be an entry variable, and filters the drop-down list everytime a key is pressed
-        self.location_bar = ttk.Entry(content, textvariable=self.location)
+        self.location_bar = ttk.Entry(content)
         self.location_bar.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
         self.location_bar.bind('<KeyRelease>', self.check_key)
 
@@ -145,6 +144,11 @@ class MoveFrame(tk.Frame):
         self.rds_cursor.execute("SELECT location FROM batteries WHERE serial_number = %s", (self.controller.selected_battery_serial_number,))
         result = self.rds_cursor.fetchall()
 
+        self.location = tk.StringVar()
+        self.location.set("")
+
+        self.location_bar.config(textvariable=self.location)
+
         if result:
             # self.old_location = result[0][0] if result else "Unknown", this messes up the method, so don't add it
             self.old_location = result[0][0]
@@ -160,13 +164,17 @@ class MoveFrame(tk.Frame):
         self.old_location_label.config (text =f"Current Location is: {self.old_location}")
 
     def previous_page(self):
-        if self.controller.selected_task_id == "21":
+        self.filtered_locations = []
+        self.filtered_location_ids = []
+        self.list_update(self.filtered_locations)
+        self.location = None
+        self.controller.selected_battery_serial_number = None
+
+        if self.controller.selected_task_id == "4":
+            self.controller.show_page(4)
+            self.controller.old_location_id = None
+        else:
             self.controller.show_page(9)
-            self.controller.selected_battery_serial_number = None
             self.controller.selected_part_number = None
             self.controller.selected_item_type = None
             self.controller.input_battery_desc = None
-        else:
-            self.controller.show_page(4)
-            self.controller.selected_battery_serial_number = None
-            self.controller.old_location_id = None

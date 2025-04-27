@@ -33,10 +33,12 @@ class PasswordFrame(tk.Frame):
         self.user_password = tk.Label(content, text="Password:", font=("Roboto", 11), bg="#f0f0f0", fg="#333333")
         self.user_password.grid(row=1, column=0, pady=5, sticky="e")
 
+        # Sorry, I did this on every slide with an entry just to be safe
+        # Here password_text is initialised, and joined to password_bar, on load_correct_password
+
         # Password entry
-        self.password_text = tk.StringVar()
-        self.password_text.set("")
-        self.password_bar = ttk.Entry(content, textvariable=self.password_text, show="*")  # Font is set via TEntry style in app.py
+        self.password_text = None
+        self.password_bar = ttk.Entry(content, show="*")  # Font is set via TEntry style in app.py
         self.password_bar.grid(row=1, column=1, pady=5, sticky="w")
 
         # Navigation buttons
@@ -74,6 +76,9 @@ class PasswordFrame(tk.Frame):
         self.user_name.config(text="Selected User: " + employee_name)
 
     def load_correct_password(self):
+        self.password_text = tk.StringVar()
+        self.password_text.set("")
+        self.password_bar.config(textvariable=self.password_text)
         self.rds_cursor.execute("select password from employees where user_id = ?", (self.controller.selected_user_id,))
         self.password_tuple = self.rds_cursor.fetchall()
         self.correct_password = self.password_tuple[0][0]
@@ -81,3 +86,4 @@ class PasswordFrame(tk.Frame):
     def previous_page(self):
         self.controller.show_page(1)
         self.controller.selected_user_id = None
+        self.password_text = None

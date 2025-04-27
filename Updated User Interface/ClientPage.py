@@ -22,6 +22,8 @@ class ClientFrame(tk.Frame):
         # create cursor to traverse local database
         self.rds_cursor = self.rds_conn.cursor()
 
+        self.status_buttons = None
+
         # create a null variable to store the clients
         self.clients = None
 
@@ -29,9 +31,12 @@ class ClientFrame(tk.Frame):
         self.filtered_clients = []
         self.filtered_client_ids = []
 
+        # Once again, I'm setting string variable to be None.
+        # It's initalised in update_client_task_list.
+        # I haven't touched anything else.
+
         # create text entry variable and make it empty.
-        self.client = tk.StringVar()
-        self.client.set("")
+        self.client = None
 
         # Create header with title
         header = tk.Frame(self, bg="#4CAF50")
@@ -54,8 +59,7 @@ class ClientFrame(tk.Frame):
 
         # String Variable to store client options
         # Initial value must be different from options listed in order to avoid selection errors
-        self.status_list = tk.StringVar(self)
-        self.status_list.set("0")
+        self.status_list = None
 
         # creates a label asking for the client name and places this label in the centre-left part of screen
         self.client_name = tk.Label(content, text="Who's the client?", font=("Roboto", 11), bg="#f0f0f0", fg="#333333")
@@ -63,7 +67,7 @@ class ClientFrame(tk.Frame):
 
         # creates text entry bar for client, places text entry bar to the right of "client Name" label
         # sets the text in entry bar to be an entry variable, and filters the drop-down list everytime a key is pressed
-        self.client_bar = ttk.Entry(content, textvariable=self.client)
+        self.client_bar = ttk.Entry(content)
         self.client_bar.grid(row=2, column=1, padx=5, pady=5, sticky="ew")
         self.client_bar.bind('<KeyRelease>', self.check_key)
 
@@ -159,14 +163,26 @@ class ClientFrame(tk.Frame):
         # loads the main status into the status selection list
         self.status = self.rds_cursor.fetchall()
 
+        self.client = tk.StringVar()
+        self.client.set("")
+
+        self.client_bar.config(textvariable=self.client)
+
+        # String Variable to store client options
+        # Initial value must be different from options listed in order to avoid selection errors
+        self.status_list = tk.StringVar(self)
+        self.status_list.set("0")
+
         # Add radiobuttons to the content frame
         content = self.client_status.master  # Get the content frame (parent of client_status)
+        self.status_buttons = []
         index = 1
         for status in self.status:
             # creates a single-selection list for each status
             self.status_option = ttk.Radiobutton(content, text=status[1], variable=self.status_list, value=status[0], command=lambda value=status[0]: self.load_client_list(value))
             # place the choices in the centre, one after the other
             self.status_option.grid(row=index, column=0, padx=10, pady=5, sticky="w")
+            self.status_buttons.append(self.status_option)
             index += 1
 
         # Navigation buttons
@@ -188,3 +204,12 @@ class ClientFrame(tk.Frame):
 
         # removes battery serial number that's stored
         self.controller.selected_battery_serial_number = None
+
+        for option in self.status_buttons:
+            option.destroy()
+
+        self.status_list = None
+        self.client = None
+        self.filtered_clients = []
+        self.filtered_client_ids = []
+        self.list_update(self.filtered_clients)
