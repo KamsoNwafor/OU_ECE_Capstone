@@ -31,9 +31,8 @@ class UserFrame(tk.Frame):
         self.user_name.grid(row=0, column=1, pady=(10, 5))
 
         # Username entry
-        self.employee = tk.StringVar()
-        self.employee.set("")
-        self.name_bar = ttk.Entry(content, textvariable=self.employee)  # Font is set via TEntry style in app.py
+        self.employee = None
+        self.name_bar = ttk.Entry(content)  # Font is set via TEntry style in app.py
         self.name_bar.grid(row=1, column=1, pady=5)
         self.name_bar.bind('<KeyRelease>', self.check_key)  # Filters the list every time a key is pressed
 
@@ -102,6 +101,14 @@ class UserFrame(tk.Frame):
     def load_user_list(self):
         self.rds_cursor.execute("select user_id, first_name, last_name from employees")
         self.users = self.rds_cursor.fetchall()
+        # Username entry
+        self.employee = tk.StringVar()
+        self.employee.set("")
+        self.name_bar.config(textvariable=self.employee)
 
     def previous_page(self):
         self.controller.show_page(0)
+        self.employee = None
+        self.filtered_users = []
+        self.filtered_user_ids = []
+        self.list_update(self.filtered_users)
