@@ -118,5 +118,4 @@ class TaskSelectionFrame(tk.Frame):
         self.forward_button.grid(row=0, column=2, padx=5)  # Grid for consistent alignment
 
     def previous_page(self):
-        self.controller.show_page(1)  # Same navigation to UserFrame (index 1)
-        self.controller.selected_user_id = None  # Same user ID reset
+        self.controller.frames[2][1].previous_page()

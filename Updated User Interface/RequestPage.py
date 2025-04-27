@@ -48,6 +48,7 @@ class RequestFrame(tk.Frame):
         self.client = None
         self.battery_desc = None
         self.battery_actions = None
+        self.input_battery_report = None
         self.old_location = None
         self.new_location = None
         self.picture_data = None
@@ -181,7 +182,7 @@ class RequestFrame(tk.Frame):
         else:
             self.old_location = "No Location"
 
-        if self.controller.selected_task_id == "21":
+        if self.controller.input_battery_desc:
             self.battery_desc = self.controller.input_battery_desc
         else:
             self.rds_cursor.execute("SELECT part_description FROM batteries WHERE serial_number = %s", (self.serial_num,))
@@ -217,31 +218,41 @@ class RequestFrame(tk.Frame):
             self.result = self.rds_cursor.fetchall()
             self.battery_actions += f"{self.result[0][0]}, "
 
-        # Generate report based on task type
-        if self.work_type_id == "1":
-            self.report.set(f"{self.employee} found {self.battery_desc}.\n"
-                          + f"Now {self.employee} is {self.emotion}")
-        elif self.work_type_id == "2":
-            self.report.set(f"{self.employee} received {self.battery_desc} from {self.client_status} {self.client}.\n"
-                          + f"{self.battery_desc}'s state was {self.battery_state}.\n"
-                          + f"Thus {self.employee} carried out the following actions:\n"
-                          + f"{self.battery_actions}.\n"
-                          + f"Now {self.employee} is {self.emotion}.")
-        elif self.work_type_id == "3":
-            self.report.set(f"{self.employee} shipped {self.battery_desc} to {self.client_status} {self.client}.\n"
-                          + f"Now {self.employee} is {self.emotion}.")
-        elif self.work_type_id == "4":
-            self.report.set(f"{self.employee} moved {self.battery_desc} from {self.old_location} to {self.new_location}.\n"
-                          + f"Now {self.employee} is {self.emotion}.")
-        elif self.work_type_id == "20":
-            self.report.set(f"{self.employee} took picture of {self.battery_desc}.\n"
-                          + f"Now {self.employee} is {self.emotion}.")
-        elif self.work_type_id == "21":
-            self.report.set(f"{self.employee} added {self.battery_desc} to the database.\n"
+        if self.controller.input_battery_desc:
+            self.input_battery_report = (f"{self.employee} added {self.battery_desc} to the database.\n"
                           + f"Serial Number is {self.serial_num}.\n"
                           + f"Part Number is {self.part_num}.\n"
                           + f"Item Type is {self.item_type}.\n"
-                          + f"Now {self.employee} is {self.emotion}.")
+                          + f"Location is {self.new_location}.\n"
+                          + f"Now {self.employee} is {self.emotion}")
+            self.report.set(self.input_battery_report)
+        else:
+            self.input_battery_report = ""
+
+            # Generate report based on task type
+            if self.work_type_id == "1":
+                self.report.set(self.input_battery_report
+                              + f"{self.employee} found {self.battery_desc}.\n"
+                              + f"Now {self.employee} is {self.emotion}")
+            elif self.work_type_id == "2":
+                self.report.set(self.input_battery_report
+                              + f"{self.employee} received {self.battery_desc} from {self.client_status} {self.client}.\n"
+                              + f"{self.battery_desc}'s state was {self.battery_state}.\n"
+                              + f"Thus {self.employee} carried out the following actions:\n"
+                              + f"{self.battery_actions}.\n"
+                              + f"Now {self.employee} is {self.emotion}.")
+            elif self.work_type_id == "3":
+                self.report.set(self.input_battery_report
+                              + f"{self.employee} shipped {self.battery_desc} to {self.client_status} {self.client}.\n"
+                              + f"Now {self.employee} is {self.emotion}.")
+            elif self.work_type_id == "4":
+                self.report.set(self.input_battery_report
+                              + f"{self.employee} moved {self.battery_desc} from {self.old_location} to {self.new_location}.\n"
+                              + f"Now {self.employee} is {self.emotion}.")
+            elif self.work_type_id == "20":
+                self.report.set(self.input_battery_report
+                              + f"{self.employee} took picture of {self.battery_desc}.\n"
+                              + f"Now {self.employee} is {self.emotion}.")
         
         self.report_text.delete("1.0", tk.END)  # Clear existing text
         self.report_text.insert("end", self.report.get())
@@ -253,13 +264,18 @@ class RequestFrame(tk.Frame):
                                      self.part_num,
                                      self.item_type,
                                      self.battery_desc,
-                                     None,
-                                     self.picture))
+                                     self.new_location_id,
+                                     self.picture_data))
             dbm.save_changes(self.rds_conn)
 
-        if self.state_id == "1" and self.picture:
-            self.rds_cursor.execute("UPDATE batteries SET picture = %s WHERE serial_number = %s",
-                                    (self.picture, self.serial_num))
+        elif (self.state_id == "1"
+        and self.picture):
+            self.rds_cursor.execute("""
+            UPDATE batteries
+            SET picture = ?
+            WHERE serial_number = ?
+            """, (self.picture_data, self.serial_num))
+
             dbm.save_changes(self.rds_conn)
 
         self.rds_cursor.execute("INSERT INTO requests VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",

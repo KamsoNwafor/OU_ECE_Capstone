@@ -97,7 +97,7 @@ class App(tk.Tk):
         self.show_page(self.curr_frame - 1)
 
 if __name__ == "__main__":
-    dbm.setup_rds_database()
+    dbm.connect_rds()
     root = App()
     root.mainloop()
 

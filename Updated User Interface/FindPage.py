@@ -127,6 +127,7 @@ class FindFrame(tk.Frame):
                 self.image = Image.open(io.BytesIO(image_data))
                 og_width, og_height = self.image.size
 
+                # It seemed I swapped the dividend and divisor. og should be divided by max, then max multiplied by the quotient
                 # Calculate the ratio to resize the image
                 ratio = min(self.max_width / og_width, self.max_height / og_height)
 

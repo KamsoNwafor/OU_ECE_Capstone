@@ -3,7 +3,6 @@ from tkinter import ttk
 from Database import DatabaseManager as dbm
 
 class ItemSelectionFrame(tk.Frame):
-    chosen_battery = None
     frame_index = 4
 
     def __init__(self, master, controller):
@@ -18,7 +17,6 @@ class ItemSelectionFrame(tk.Frame):
 
         # Initialize variables for battery data
         self.batteries = None
-        self.filtered_batteries = []
         self.filtered_battery_ids = []
 
         # Create header frame with a green background and title
@@ -52,15 +50,18 @@ class ItemSelectionFrame(tk.Frame):
         self.battery_list = tk.Listbox(content, yscrollcommand=self.battery_scrollbar.set, font=("Roboto", 11))
         self.battery_scrollbar.config(command=self.battery_list.yview)
         self.battery_list.grid(row=3, column=1, padx=10, pady=10)
-        self.battery_list.bind("<Double-1>", self.battery_selection)
-        self.list_update(self.filtered_batteries)
+        # self.battery_list.bind("<Double-1>", self.battery_selection)
+        # I removed the bind double-click because it shouldn't happen automatically. Only if we aren't intaking a new item
+
+        # Update with battery_ids
+        self.list_update(self.filtered_battery_ids)
 
         # Navigation buttons frame
         nav_frame = tk.Frame(content, bg="#f0f0f0")
         nav_frame.grid(row=4, column=0, columnspan=3, pady=10)
 
         # Back button to return to the previous page
-        self.back_button = ttk.Button(nav_frame, text="Back", style="Secondary.TButton", command=lambda: controller.back_button())
+        self.back_button = ttk.Button(nav_frame, text="Back", style="Secondary.TButton", command=lambda: self.previous_page())
         self.back_button.pack(side="left", padx=5)
 
         # Forward button to proceed with battery selection
@@ -72,18 +73,15 @@ class ItemSelectionFrame(tk.Frame):
         value = event.widget.get()
         # If the entry is empty, clear the filtered lists
         if value == '':
-            self.filtered_batteries = []
             self.filtered_battery_ids = []
         else:
             # Filter batteries based on the entered text
-            self.filtered_batteries = []
             self.filtered_battery_ids = []
             for item in self.batteries:
-                if value.lower() in item[1].lower():
-                    self.filtered_batteries.append(item[1])
+                if value.lower() in item[0].lower():
                     self.filtered_battery_ids.append(item[0])
         # Update the listbox with filtered batteries
-        self.list_update(self.filtered_batteries)
+        self.list_update(self.filtered_battery_ids)
 
     def list_update(self, data):
         # Clear the listbox
@@ -101,26 +99,30 @@ class ItemSelectionFrame(tk.Frame):
         self.user_name.config(text=f"Selected User: {employee_name}")
 
     def battery_selection(self, event):
-        # Handle battery selection for tasks other than new item intake (task ID 21)
-        if self.controller.selected_task_id != "21":
-            if self.filtered_batteries and self.battery_list.curselection():
+        # If trying new item intake (task ID 21)
+        # Or none of the existing items in the list have been clicked
+        if (self.controller.selected_task_id != "21"
+            and (self.battery.get() in self.filtered_battery_ids
+            or self.battery_list.curselection())):
+            if self.battery_list.curselection():
                 # Get the index of the selected battery
                 index = self.battery_list.curselection()[0]
                 # Update the entry field with the selected battery
                 for i in self.battery_list.curselection():
                     self.battery.set(self.battery_list.get(i))
-                # Store the selected battery and its serial number
-                self.chosen_battery = self.filtered_batteries[index]
+                # Store the selected battery's serial number
                 self.controller.selected_battery_serial_number = self.filtered_battery_ids[index]
-                # Navigate to the appropriate task page
-                self.show_task_page()
-                # Update the list to show only the selected battery
-                data = [self.chosen_battery]
-                self.list_update(data)
+            else:
+                self.controller.selected_battery_serial_number = self.battery.get()
+            # Navigate to the appropriate task page
+            self.show_task_page()
+            # Update the list to show only the selected battery
+            data = [self.controller.selected_battery_serial_number]
+            self.list_update(data)
         else:
             # For new item intake, store the entered description and navigate to the new item page
-            self.controller.input_battery_desc = self.battery.get()
-            self.controller.frames[9][1].set_description()
+            self.controller.selected_battery_serial_number = self.battery.get()
+            self.controller.frames[9][1].set_serial_num()
             self.controller.show_page(9)
 
     def show_task_page(self):

@@ -5,7 +5,7 @@ from Database import DatabaseManager as dbm
 # import the tk.Frame class that creates frames
 class MoveFrame(tk.Frame):
     chosen_client = None
-    frame_index = 6
+    frame_index = 7
 
     def __init__(self, master, controller):
         tk.Frame.__init__(self, master, bg="#fafafa")  # Set soft background color
@@ -145,16 +145,28 @@ class MoveFrame(tk.Frame):
         self.rds_cursor.execute("SELECT location FROM batteries WHERE serial_number = %s", (self.controller.selected_battery_serial_number,))
         result = self.rds_cursor.fetchall()
 
-        self.old_location = result[0][0] if result else "Unknown"
-        self.controller.old_location_id = self.old_location
+        if result:
+            # self.old_location = result[0][0] if result else "Unknown", this messes up the method, so don't add it
+            self.old_location = result[0][0]
+            self.controller.old_location_id = self.old_location
 
-        self.rds_cursor.execute("SELECT * FROM locations WHERE location_id = %s", (self.old_location,))
-        result = self.rds_cursor.fetchall()
+            self.rds_cursor.execute("SELECT * FROM locations WHERE location_id = %s", (self.old_location,))
+            result = self.rds_cursor.fetchall()
 
-        self.old_location = result[0][1] if result else "Unknown"
-        self.old_location_label.config(text=f"Current Location is: {self.old_location}")
+            self.old_location = result[0][1]
+        else:
+            self.old_location = "No Location"
+        
+        self.old_location_label.config (text =f"Current Location is: {self.old_location}")
 
     def previous_page(self):
-        self.controller.show_page(4)
         self.controller.selected_battery_serial_number = None
-        self.controller.old_location_id = None
+
+        if self.controller.selected_task_id == "4":
+            self.controller.show_page(4)
+            self.controller.old_location_id = None
+        else:
+            self.controller.show_page(9)
+            self.controller.selected_part_number = None
+            self.controller.selected_item_type = None
+            self.controller.input_battery_desc = None

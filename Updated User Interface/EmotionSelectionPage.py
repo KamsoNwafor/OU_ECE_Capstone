@@ -7,7 +7,7 @@ from Database import DatabaseManager as dbm
 # import the tk.Frame class that creates frames
 class EmotionSelectionFrame(tk.Frame):
     # store relative frame index number
-    frame_index = 3
+    frame_index = 12
 
     def __init__(self, master, controller):
         # initialise the imported class
@@ -58,12 +58,21 @@ class EmotionSelectionFrame(tk.Frame):
             self.controller.show_page(-1)
 
     def previous_page(self):
-        # if find is selected, show find page
-        if self.controller.selected_task_id == "1":
-            self.controller.show_page(5)
-        # if not, then show take picture page, since every other instruction needs a picture
-        else:
+        self.rds_cursor.execute("select * from batteries where serial_number = ?",
+                                (self.controller.selected_battery_serial_number,))
+        result = self.rds_cursor.fetchall()
+
+        if not result:
+            # go back to move page for intaking new batteries
             self.controller.show_page(8)
+
+        else:
+            # if find is selected, show find page
+            if self.controller.selected_task_id == "1":
+                self.controller.show_page(5)
+            # if not, then show take picture page, since every other instruction needs a picture
+            else:
+                self.controller.show_page(8)
 
     def update_emotion_list(self):
         # track number of emotions
