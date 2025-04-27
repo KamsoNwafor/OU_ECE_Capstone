@@ -7,7 +7,7 @@ from Database import DatabaseManager as dbm
 # import the tk.Frame class that creates frames
 class EmotionSelectionFrame(tk.Frame):
     # store relative frame index number
-    frame_index = 3
+    frame_index = 12
 
     def __init__(self, master, controller):
         # initialise the imported class

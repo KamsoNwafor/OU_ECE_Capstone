@@ -52,7 +52,8 @@ class ItemSelectionFrame(tk.Frame):
         self.battery_list = tk.Listbox(content, yscrollcommand=self.battery_scrollbar.set, font=("Roboto", 11))
         self.battery_scrollbar.config(command=self.battery_list.yview)
         self.battery_list.grid(row=3, column=1, padx=10, pady=10)
-        self.battery_list.bind("<Double-1>", self.battery_selection)
+        # self.battery_list.bind("<Double-1>", self.battery_selection)
+        # I removed the bind double-click because it shouldn't happen automatically. Only if we aren't intaking a new item
         self.list_update(self.filtered_batteries)
 
         # Navigation buttons frame
