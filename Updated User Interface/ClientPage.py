@@ -1,14 +1,15 @@
 import tkinter as tk
+from tkinter import ttk
 from Database import DatabaseManager as dbm
 
 # import the tk.Frame class that creates frames
-class ClientFrame (tk.Frame):
+class ClientFrame(tk.Frame):
     chosen_client = None
     frame_index = 6
 
     def __init__(self, master, controller):
         # initialise the imported class
-        tk.Frame.__init__(self, master)
+        tk.Frame.__init__(self, master, bg="#fafafa")  # Set soft background color
 
         # store an instance of controller in frame, easier to manage controller data
         self.controller = controller
@@ -32,43 +33,18 @@ class ClientFrame (tk.Frame):
         self.client = tk.StringVar()
         self.client.set("")
 
-        # creates a label asking for the client name and places this label in the centre-left part of screen
-        self.client_name = tk.Label(master=self)
-        self.client_name.config(text="Who's the client?")
-        self.client_name.grid(row=1, column=0)
+        # Create header with title
+        header = tk.Frame(self, bg="#4CAF50")
+        header.pack(fill="x")
+        tk.Label(header, text="Step 5: Select Client", font=("Roboto", 14, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(pady=15)
 
-        # creates text entry bar for client, places text entry bar to the right of "client Name" label
-        # sets the text in entry bar to be an entry variable, and filters the drop-down list everytime a key is pressed
-        self.client_bar = tk.Entry(master=self)
-        self.client_bar.grid(row=1, column=1)  #
-        self.client_bar.config(textvariable=self.client)
-        self.client_bar.bind('<KeyRelease>', self.check_key)
+        # Create content frame
+        content = tk.Frame(self, bg="#f0f0f0", bd=1, relief="solid")
+        content.pack(pady=10, padx=10, fill="both", expand=True)
 
-        # don't initialise buttons yet, as their positions could depend on the length of the button list
-        self.forward_button = None
-        self.back_button = None
-
-        # creates scrollbar to manage there are many clients, puts scrollbar to the bottom-right of client text box
-        self.client_scrollbar = tk.Scrollbar(master=self)
-        self.client_scrollbar.grid(row=2, column=2, padx=10, pady=10, sticky="NS")
-
-        # creates a box to show a filtered list of clients based on keyboard input, attaches list to scrollbar
-        self.client_list = tk.Listbox(master=self)
-        self.client_list.config(yscrollcommand=self.client_scrollbar.set)
-
-        # attaches scrollbar to list
-        self.client_scrollbar.config(command=self.client_list.yview)
-
-        # if a list item is double tapped, select it, place listbox to the left of scrollbar.
-        # start with empty list
-        self.client_list.bind("<Double-1>", self.client_selection)
-        self.client_list.grid(row=2, column=1, padx=10, pady=10)
-        self.list_update(self.filtered_clients)
-
-        # creates a label asking for the client name and places this label in the centre-left part of screen
-        self.client_status = tk.Label(master=self)
-        self.client_status.config(text="Customer or Supplier?")
-        self.client_status.grid(row=0, column=0)
+        # creates a label asking for the client status and places this label in the top-left part of screen
+        self.client_status = tk.Label(content, text="Customer or Supplier?", font=("Roboto", 12, "bold"), bg="#f0f0f0", fg="#212121")
+        self.client_status.grid(row=0, column=0, pady=(10, 5), sticky="w")
 
         # a variable to track whether the client is a supplier or a customer
         self.status = None
@@ -78,11 +54,37 @@ class ClientFrame (tk.Frame):
 
         # String Variable to store client options
         # Initial value must be different from options listed in order to avoid selection errors
-        self.status_list = tk.StringVar(master=self)
+        self.status_list = tk.StringVar(self)
         self.status_list.set("0")
 
-        # filters the list based on current characters in text entry box.
-        # If box is empty, empty the list (to reduce potential queries from the web)
+        # creates a label asking for the client name and places this label in the centre-left part of screen
+        self.client_name = tk.Label(content, text="Who's the client?", font=("Roboto", 11), bg="#f0f0f0", fg="#333333")
+        self.client_name.grid(row=2, column=0, pady=5, sticky="w")
+
+        # creates text entry bar for client, places text entry bar to the right of "client Name" label
+        # sets the text in entry bar to be an entry variable, and filters the drop-down list everytime a key is pressed
+        self.client_bar = ttk.Entry(content, textvariable=self.client)
+        self.client_bar.grid(row=2, column=1, padx=5, pady=5, sticky="ew")
+        self.client_bar.bind('<KeyRelease>', self.check_key)
+
+        # creates scrollbar to manage there are many clients, puts scrollbar to the bottom-right of client text box
+        self.client_scrollbar = ttk.Scrollbar(content, orient="vertical")
+        self.client_scrollbar.grid(row=3, column=2, padx=(0, 10), pady=10, sticky="ns")
+
+        # creates a box to show a filtered list of clients based on keyboard input, attaches list to scrollbar
+        self.client_list = tk.Listbox(content, yscrollcommand=self.client_scrollbar.set, font=("Roboto", 11))
+        self.client_list.grid(row=3, column=1, padx=(10, 0), pady=10, sticky="ew")
+
+        # attaches scrollbar to list
+        self.client_scrollbar.config(command=self.client_list.yview)
+
+        # if a list item is double tapped, select it, place listbox to the left of scrollbar.
+        # start with empty list
+        self.client_list.bind("<Double-1>", self.client_selection)
+        self.list_update(self.filtered_clients)
+
+    # filters the list based on current characters in text entry box.
+    # If box is empty, empty the list (to reduce potential queries from the web)
     def check_key(self, event):
         # gets the text currently in the entry box
         value = event.widget.get()
@@ -114,7 +116,7 @@ class ClientFrame (tk.Frame):
         for item in data:
             self.client_list.insert('end', item)
 
-    def client_selection(self, event):
+    def client_selection(self, event=None):
         # makes sure a valid client was selected
         if self.filtered_clients and self.client_list.curselection():
             # returns the index of the item chosen as listed in the original list
@@ -138,10 +140,7 @@ class ClientFrame (tk.Frame):
     # finds all clients in database and saves them as the original list of clients
     def load_client_list(self, value):
         # 1 is None, so don't include 1.
-        self.rds_cursor.execute("""SELECT * from clients 
-                                    WHERE client_id > ?
-                                    and client_status_id = ?
-                                    order by client_id;""", (1, value))
+        self.rds_cursor.execute("SELECT * FROM clients WHERE client_id > %s AND client_status_id = %s ORDER BY client_id", (1, value))
         self.clients = self.rds_cursor.fetchall()
 
     # load the take picture page.
@@ -153,42 +152,35 @@ class ClientFrame (tk.Frame):
             self.controller.frames[8][1].image_preview()
             self.controller.show_page(8)
 
-
     def update_client_task_list(self):
         # searches for the client roles in the database
-        self.rds_cursor.execute("""
-        select *
-        from client_status
-        """)
+        self.rds_cursor.execute("SELECT * FROM client_status")
 
         # loads the main status into the status selection list
         self.status = self.rds_cursor.fetchall()
 
+        # Add radiobuttons to the content frame
+        content = self.client_status.master  # Get the content frame (parent of client_status)
         index = 1
         for status in self.status:
             # creates a single-selection list for each status
-            self.status_option = tk.Radiobutton(master=self)
-
-            self.status_option.config(command = lambda value = status[0]: self.load_client_list(value))
-
-            # labels each choice by the relevant status and gives it a place value
-            self.status_option.config(text=status[1], variable=self.status_list, value=status[0])
-
+            self.status_option = ttk.Radiobutton(content, text=status[1], variable=self.status_list, value=status[0], command=lambda value=status[0]: self.load_client_list(value))
             # place the choices in the centre, one after the other
-            self.status_option.grid(row=index, column=0, padx=10, pady=10, sticky="NEWS")
+            self.status_option.grid(row=index, column=0, padx=10, pady=5, sticky="w")
             index += 1
+
+        # Navigation buttons
+        nav_frame = tk.Frame(content, bg="#f0f0f0")
+        nav_frame.grid(row=index, column=0, columnspan=3, pady=10)
+
+        # button to go to the previous page (item selection page), places back button at the bottom left of screen
+        self.back_button = ttk.Button(nav_frame, text="Back", style="Secondary.TButton", command=self.previous_page)
+        self.back_button.pack(side="left", padx=5)
 
         # creates button to go to the next page (client selection page), places forward button at the bottom right of screen
         # if a list item is highlighted, then the forward button is clicked, select it
-        self.forward_button = tk.Button(master=self)
-        self.forward_button.config(width=20, text="Forward")
-        self.forward_button.grid(row=index, column=3, padx=10, pady=10, sticky="SE")
-        self.forward_button.bind("<Button-1>", self.client_selection)
-
-        # button to go to the previous page (item selection page), places back button at the bottom left of screen
-        self.back_button = tk.Button(master=self)
-        self.back_button.config(width=20, text="Back", command=lambda: self.previous_page())
-        self.back_button.grid(row=index, column=0, padx=10, pady=10, sticky="SW")
+        self.forward_button = ttk.Button(nav_frame, text="Forward", style="Primary.TButton", command=self.client_selection)
+        self.forward_button.pack(side="left", padx=5)
 
     def previous_page(self):
         # loads previous page (item selection)
