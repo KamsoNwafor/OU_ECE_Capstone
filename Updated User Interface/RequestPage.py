@@ -1,6 +1,7 @@
 import io
 import os
 import tkinter as tk
+from tkinter import ttk
 import openpyxl as xl
 from openpyxl import Workbook
 from openpyxl.styles import Alignment
@@ -8,19 +9,17 @@ from Database import DatabaseManager as dbm
 from datetime import datetime
 from PIL import Image
 
-# Report Frame
 class RequestFrame(tk.Frame):
     frame_index = 13
 
     def __init__(self, master, controller):
-        tk.Frame.__init__(self, master)
+        tk.Frame.__init__(self, master, bg="#fafafa")  # Set soft background color
         self.controller = controller
 
-        # connect to local database and create cursor to traverse local database
         self.rds_conn = dbm.get_rds_conn()
         self.rds_cursor = self.rds_conn.cursor()
 
-        # variables carried over from the controller, don't initialise any of them
+        # Variables carried over from the controller
         self.request_id = None
         self.curr_time = None
         self.request_timestamp = tk.StringVar()
@@ -37,7 +36,7 @@ class RequestFrame(tk.Frame):
         self.part_num = None
         self.item_type = None
 
-        # variables to write a report
+        # Variables to write a report
         self.emotion = None
         self.report = tk.StringVar()
         self.report.set("")
@@ -54,23 +53,22 @@ class RequestFrame(tk.Frame):
         self.picture_data = None
         self.client_status = None
 
-        # picture manager
+        # Picture manager
         self.max_width = 800 // 3
         self.max_height = 480 // 3
 
-        # set title of excel file to save reports in
+        # Set title of Excel file to save reports in
         self.workbook_title = "Request Report.xlsx"
 
-        # creates a workbook object, argument is the name of workbook
+        # Create or load workbook
         try:
             self.wb = xl.load_workbook(self.workbook_title)
-        ## if workbook doesn't exist, create new workbook, save with intended title, and load it again
         except FileNotFoundError:
             self.wb = Workbook()
-            self.wb.save (self.workbook_title)
+            self.wb.save(self.workbook_title)
             self.wb = xl.load_workbook(self.workbook_title)
 
-        # choose the sheet in excel file
+        # Choose the sheet in Excel file
         self.report_sheet = self.wb.active
         self.report_sheet.title = "Reports"
 
@@ -78,33 +76,43 @@ class RequestFrame(tk.Frame):
         self.timestamp_title_cell = self.report_sheet["B1"]
         self.report_title_cell = self.report_sheet["C1"]
 
-        if (self.request_title_cell.value != "Request ID" # if title columns have wrong title, give them the right title
-         or self.timestamp_title_cell.value != "Report Timestamp"
-         or self.report_title_cell.value != "Report"):
+        if (self.request_title_cell.value != "Request ID" or
+            self.timestamp_title_cell.value != "Report Timestamp" or
+            self.report_title_cell.value != "Report"):
             self.request_title_cell.value = "Request ID"
             self.timestamp_title_cell.value = "Report Timestamp"
-            self.request_title_cell.value = "Request ID"
             self.report_title_cell.value = "Report"
 
         self.request_cell = None
         self.timestamp_cell = None
         self.report_cell = None
 
-        self.report_label = tk.Label(master = self)
-        self.report_label.config(text="Please Make Any Final Edits To The Report")
-        self.report_label.grid(row = 0, column = 1, padx = 10, pady = 10)
+        # Create header with title
+        header = tk.Frame(self, bg="#4CAF50")
+        header.pack(fill="x")
+        tk.Label(header, text="Step 6: Final Report", font=("Roboto", 14, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(pady=15)
 
-        self.report_text = tk.Text(master = self)
-        self.report_text.config(height = 20, width = 50, wrap = tk.WORD)
-        self.report_text.grid(row = 1, column = 1, padx = 10, pady = 10)
+        # Create content frame
+        content = tk.Frame(self, bg="#f0f0f0", bd=1, relief="solid")
+        content.pack(pady=10, padx=10, fill="both", expand=True)
 
-        self.submit_button = tk.Button(master = self)
-        self.submit_button.config(width=20, text="Confirm", command=lambda: self.complete_report())
-        self.submit_button.grid(row=2, column=2, padx=10, pady=10, sticky="SE")
+        # Instruction label
+        self.report_label = tk.Label(content, text="Please Make Any Final Edits To The Report", font=("Roboto", 12, "bold"), bg="#f0f0f0", fg="#212121")
+        self.report_label.grid(row=0, column=0, pady=(10, 5))
 
-        self.back_button = tk.Button(master=self)
-        self.back_button.config(width=20, text="Back", command=lambda: self.previous_page())
-        self.back_button.grid(row=2, column=0, padx=10, pady=10, sticky = "SW")
+        # Report text area
+        self.report_text = tk.Text(content, height=20, width=50, wrap=tk.WORD, font=("Roboto", 11))
+        self.report_text.grid(row=1, column=0, padx=10, pady=10)
+
+        # Navigation buttons
+        nav_frame = tk.Frame(content, bg="#f0f0f0")
+        nav_frame.grid(row=2, column=0, pady=10)
+
+        self.back_button = ttk.Button(nav_frame, text="Back", style="Secondary.TButton", command=self.previous_page)
+        self.back_button.pack(side="left", padx=5)
+
+        self.submit_button = ttk.Button(nav_frame, text="Confirm", style="Primary.TButton", command=self.complete_report)
+        self.submit_button.pack(side="left", padx=5)
 
     def complete_report(self):
         self.submit_request()
@@ -122,10 +130,10 @@ class RequestFrame(tk.Frame):
 
     def load_report(self):
         self.rds_cursor.execute("""
-                                SELECT request_id FROM requests
-                                ORDER BY request_id DESC
-                                LIMIT 1;
-                                """)
+            SELECT request_id FROM requests
+            ORDER BY request_id DESC
+            LIMIT 1;
+        """)
         self.result = self.rds_cursor.fetchall()
 
         if not self.result:
@@ -152,7 +160,7 @@ class RequestFrame(tk.Frame):
             
         if self.controller.selected_picture:
             self.picture = self.controller.selected_picture
-            self.picture = self.picture.resize((self.max_width, self.max_height), Image.LANCZOS)
+            self.picture = self.picture.resize((self.max_width, self.max_height), Image.Resampling.LANCZOS)
 
             # Convert the image to binary data (BLOB format)
             with io.BytesIO() as byte_io:
@@ -161,15 +169,13 @@ class RequestFrame(tk.Frame):
 
         if self.controller.selected_location_id:
             self.new_location_id = self.controller.selected_location_id
-            self.rds_cursor.execute("""SELECT location_description FROM locations where location_id = ?""",
-                                    (self.new_location_id,))
+            self.rds_cursor.execute("SELECT location_description FROM locations WHERE location_id = %s", (self.new_location_id,))
             self.result = self.rds_cursor.fetchall()
             self.new_location = self.result[0][0]
 
         if self.controller.old_location_id:
             self.old_location_id = self.controller.old_location_id
-            self.rds_cursor.execute("""SELECT location_description FROM locations where location_id = ?""",
-                                    (self.old_location_id,))
+            self.rds_cursor.execute("SELECT location_description FROM locations WHERE location_id = %s", (self.old_location_id,))
             self.result = self.rds_cursor.fetchall()
             self.old_location = self.result[0][0]
         else:
@@ -178,8 +184,7 @@ class RequestFrame(tk.Frame):
         if self.controller.selected_task_id == "21":
             self.battery_desc = self.controller.input_battery_desc
         else:
-            self.rds_cursor.execute("""SELECT part_description FROM batteries where serial_number = ?""",
-                                    (self.serial_num,))
+            self.rds_cursor.execute("SELECT part_description FROM batteries WHERE serial_number = %s", (self.serial_num,))
             self.result = self.rds_cursor.fetchall()
             self.battery_desc = self.result[0][0]
 
@@ -189,94 +194,75 @@ class RequestFrame(tk.Frame):
         if self.controller.selected_item_type:
             self.item_type = self.controller.selected_item_type
 
-        self.rds_cursor.execute("""SELECT first_name, last_name FROM employees where user_id = ?""", (self.user_id,))
+        self.rds_cursor.execute("SELECT first_name, last_name FROM employees WHERE user_id = %s", (self.user_id,))
         self.result = self.rds_cursor.fetchall()
         self.employee = f"{self.result[0][0]} {self.result[0][1]}"
 
-        self.rds_cursor.execute("""SELECT client_desc, client_status_id FROM clients where client_id = ?""",
-                                (self.client_id,))
+        self.rds_cursor.execute("SELECT client_desc, client_status_id FROM clients WHERE client_id = %s", (self.client_id,))
         self.result = self.rds_cursor.fetchall()
         self.client = self.result[0][0]
         self.client_status = self.result[0][1]
 
-        self.rds_cursor.execute("""SELECT client_status_desc FROM client_status where client_status_id = ?""",
-                                (self.client_status,))
+        self.rds_cursor.execute("SELECT client_status_desc FROM client_status WHERE client_status_id = %s", (self.client_status,))
         self.result = self.rds_cursor.fetchall()
         self.client_status = self.result[0][0]
 
-        self.rds_cursor.execute("""SELECT state_desc FROM battery_state where state_id = ?""",
-                                (self.state_id,))
+        self.rds_cursor.execute("SELECT state_desc FROM battery_state WHERE state_id = %s", (self.state_id,))
         self.result = self.rds_cursor.fetchall()
         self.battery_state = self.result[0][0]
 
         self.battery_actions = ""
         for action in self.actions:
-            self.rds_cursor.execute("""SELECT work_type_name FROM works where work_type_id = ?""",
-                                    (action,))
+            self.rds_cursor.execute("SELECT work_type_name FROM works WHERE work_type_id = %s", (action,))
             self.result = self.rds_cursor.fetchall()
             self.battery_actions += f"{self.result[0][0]}, "
 
-        # if find is selected
+        # Generate report based on task type
         if self.work_type_id == "1":
             self.report.set(f"{self.employee} found {self.battery_desc}.\n"
-                            + f"Now {self.employee} is {self.emotion}")
-        # if receive is selected
+                          + f"Now {self.employee} is {self.emotion}")
         elif self.work_type_id == "2":
-            self.report.set(
-                f"{self.employee} received {self.battery_desc} from {self.client_status} {self.client}.\n"
-                + f"{self.battery_desc}'s state was {self.battery_state}.\n"
-                + f"Thus {self.employee} carried out the following actions:\n"
-                + f"{self.battery_actions}.\n"
-                + f"Now {self.employee} is {self.emotion}.")
-        # if ship is selected
+            self.report.set(f"{self.employee} received {self.battery_desc} from {self.client_status} {self.client}.\n"
+                          + f"{self.battery_desc}'s state was {self.battery_state}.\n"
+                          + f"Thus {self.employee} carried out the following actions:\n"
+                          + f"{self.battery_actions}.\n"
+                          + f"Now {self.employee} is {self.emotion}.")
         elif self.work_type_id == "3":
-            self.report.set(
-                f"{self.employee} shipped {self.battery_desc} to {self.client_status} {self.client}.\n"
-                + f"Now {self.employee} is {self.emotion}.")
-        # if move is selected
+            self.report.set(f"{self.employee} shipped {self.battery_desc} to {self.client_status} {self.client}.\n"
+                          + f"Now {self.employee} is {self.emotion}.")
         elif self.work_type_id == "4":
-            self.report.set(
-                f"{self.employee} moved {self.battery_desc} from {self.old_location} to {self.new_location}.\n"
-                + f"Now {self.employee} is {self.emotion}.")
-        # if take picture is selected
+            self.report.set(f"{self.employee} moved {self.battery_desc} from {self.old_location} to {self.new_location}.\n"
+                          + f"Now {self.employee} is {self.emotion}.")
         elif self.work_type_id == "20":
-            self.report.set(
-                f"{self.employee} took picture of {self.battery_desc}.\n"
-                + f"Now {self.employee} is {self.emotion}.")
-        # if intake new item is selected
+            self.report.set(f"{self.employee} took picture of {self.battery_desc}.\n"
+                          + f"Now {self.employee} is {self.emotion}.")
         elif self.work_type_id == "21":
-            self.report.set(
-                f"{self.employee} added {self.battery_desc} to the database.\n"
-                + f"Serial Number is {self.serial_num}.\n"
-                + f"Part Number is {self.part_num}.\n"
-                + f"Item Type is {self.item_type}.\n"
-                + f"Now {self.employee} is {self.emotion}.")
+            self.report.set(f"{self.employee} added {self.battery_desc} to the database.\n"
+                          + f"Serial Number is {self.serial_num}.\n"
+                          + f"Part Number is {self.part_num}.\n"
+                          + f"Item Type is {self.item_type}.\n"
+                          + f"Now {self.employee} is {self.emotion}.")
         
+        self.report_text.delete("1.0", tk.END)  # Clear existing text
         self.report_text.insert("end", self.report.get())
 
     def submit_request(self):
         if self.work_type_id == "21":
-            self.rds_cursor.execute(""" INSERT INTO batteries VALUES(?, ?, ?, ?, ?, ?); """,
+            self.rds_cursor.execute("INSERT INTO batteries VALUES (%s, %s, %s, %s, %s, %s)",
                                     (self.serial_num,
                                      self.part_num,
                                      self.item_type,
                                      self.battery_desc,
                                      None,
                                      self.picture))
-
             dbm.save_changes(self.rds_conn)
 
-        if (self.state_id == "1"
-        and self.picture):
-            self.rds_cursor.execute("""
-            UPDATE batteries
-            SET picture = ?
-            WHERE serial_number = ?
-            """, (self.picture, self.serial_num))
-
+        if self.state_id == "1" and self.picture:
+            self.rds_cursor.execute("UPDATE batteries SET picture = %s WHERE serial_number = %s",
+                                    (self.picture, self.serial_num))
             dbm.save_changes(self.rds_conn)
 
-        self.rds_cursor.execute(""" INSERT INTO requests VALUES(?, ?, ?, ?, ?, ?, ?, ?); """,
+        self.rds_cursor.execute("INSERT INTO requests VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
                                 (self.request_id,
                                  self.curr_time,
                                  self.serial_num,
@@ -285,25 +271,23 @@ class RequestFrame(tk.Frame):
                                  self.state_id,
                                  self.client_id,
                                  self.picture_data))
-
         dbm.save_changes(self.rds_conn)
         
-        self.rds_cursor.execute(""" INSERT INTO reports VALUES(?, ?, ?); """,
+        self.rds_cursor.execute("INSERT INTO reports VALUES (%s, %s, %s)",
                                 (self.request_id,
                                  self.curr_time,
                                  self.report_text.get("1.0", tk.END)))
-
         dbm.save_changes(self.rds_conn)
 
     def submit_report(self):
         self.request_cell = self.report_sheet[f"A{self.request_id + 1}"]
-        self.timestamp_cell = self.report_sheet[f"B{self.request_id + 1}"]  # increment so cell titles are not over-written
+        self.timestamp_cell = self.report_sheet[f"B{self.request_id + 1}"]
         self.report_cell = self.report_sheet[f"C{self.request_id + 1}"]
 
-        self.report_cell.alignment = Alignment(wrap_text=True) # wrap text so newline breaks appear
+        self.report_cell.alignment = Alignment(wrap_text=True)
 
         self.request_cell.value = self.request_id
-        self.timestamp_cell.value = self.request_timestamp.get()  ## Assign values to cells
+        self.timestamp_cell.value = self.request_timestamp.get()
         self.report_cell.value = self.report_text.get("1.0", tk.END)
 
         print(self.report_cell.value)
@@ -311,20 +295,17 @@ class RequestFrame(tk.Frame):
         self.adjust_cell_width()
 
     def adjust_cell_width(self):
-        for col in self.report_sheet.columns:  # Automatically Adjust Cell Width
+        for col in self.report_sheet.columns:
             max_length = 0
-            column = col[0].column_letter  # Get the column name
+            column = col[0].column_letter
             for row in range(1, self.report_sheet.max_row + 1):
                 cell = self.report_sheet[f"{column}{row}"]
-
                 if len(str(cell.value)) > max_length:
                     max_length = len(str(cell.value))
-
             adjusted_width = (max_length + 2) * 1.2
             self.report_sheet.column_dimensions[column].width = adjusted_width
 
     def reset_report(self):
-        # variables carried over from the controller, don't initialise any of them
         self.request_id = None
         self.curr_time = None
         self.request_timestamp = tk.StringVar()
@@ -332,19 +313,19 @@ class RequestFrame(tk.Frame):
         self.serial_num = None
         self.work_type_id = None
         self.user_id = None
-        self.state_id = 1
-        self.client_id = 1
-        self.actions = [1]
+        self.state_id = "1"
+        self.client_id = "1"
+        self.actions = ["1"]
         self.old_location_id = None
         self.new_location_id = None
         self.picture = None
+        self.part_num = None
+        self.item_type = None
 
-        # variables to write a report
         self.emotion = None
         self.report = tk.StringVar()
         self.report.set("")
 
-        # Variables to avoid garbage collection
         self.result = None
         self.employee = None
         self.battery_state = None
@@ -354,3 +335,4 @@ class RequestFrame(tk.Frame):
         self.old_location = None
         self.new_location = None
         self.picture_data = None
+        self.client_status = None
