@@ -263,6 +263,12 @@ class RequestFrame(tk.Frame):
                                      self.battery_desc,
                                      None,
                                      self.picture))
+        elif self.work_type_id == "4":
+            self.rds_cursor.execute("""
+            UPDATE batteries
+            SET location = ?
+            WHERE serial_number = ?
+            """, (self.new_location_id, self.serial_num))
 
             dbm.save_changes(self.rds_conn)
 

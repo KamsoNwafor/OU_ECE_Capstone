@@ -150,8 +150,11 @@ class MoveFrame (tk.Frame):
                 """, (self.old_location,))
         
         result = self.rds_cursor.fetchall()
-        
-        self.old_location = result[0][1]
+
+        if self.old_location:
+            self.old_location = result[0][1]
+        else:
+            self.old_location = "No Location"
         
         self.old_location_label.config (text =f"Current Location is: {self.old_location}")
 
