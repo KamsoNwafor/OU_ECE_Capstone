@@ -28,7 +28,7 @@ class UserFrame(tk.Frame):
         # Create header section with title
         header = tk.Frame(self, bg="#4CAF50")
         header.pack(fill="x")
-        tk.Label(header, text="Step 2: User Selection", font=("Roboto", 12, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(pady=8)
+        tk.Label(header, text="User Selection", font=("Roboto", 12, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(pady=8)
 
         # Create main content area
         content = tk.Frame(self, bg="#f0f0f0", bd=1, relief="solid")
@@ -45,7 +45,7 @@ class UserFrame(tk.Frame):
         content.grid_columnconfigure(2, weight=1)
 
         # Create Username label
-        self.user_name = tk.Label(content, text="Username:", font=("Roboto", 13), bg="#f0f0f0", fg="#333333")
+        self.user_name = tk.Label(content, text="Who are you?", font=("Roboto", 13), bg="#f0f0f0", fg="#333333")
         self.user_name.grid(row=0, column=1, pady=(3, 1))
 
         # Create entry field for typing username

@@ -31,7 +31,7 @@ class BatteryStateActionFrame(tk.Frame):
         # Create header with title
         header = tk.Frame(self, bg="#4CAF50")
         header.pack(fill="x")
-        tk.Label(header, text="Step 7: Battery Actions", font=("Roboto", 14, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(pady=10)
+        tk.Label(header, text="Battery Actions", font=("Roboto", 14, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(pady=10)
 
         # Create content frame
         content = tk.Frame(self, bg="#f0f0f0", bd=1, relief="solid")

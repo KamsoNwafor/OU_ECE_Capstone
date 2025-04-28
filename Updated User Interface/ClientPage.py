@@ -36,7 +36,7 @@ class ClientFrame(tk.Frame):
         # Create header with title
         header = tk.Frame(self, bg="#4CAF50")
         header.pack(fill="x")
-        tk.Label(header, text="Step 5: Select Client", font=("Roboto", 14, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(pady=15)
+        tk.Label(header, text="Select Client", font=("Roboto", 14, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(pady=15)
 
         # Create content frame
         content = tk.Frame(self, bg="#f0f0f0", bd=1, relief="solid")
