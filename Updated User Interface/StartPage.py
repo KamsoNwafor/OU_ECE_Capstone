@@ -17,10 +17,21 @@ class StartFrame(tk.Frame):
 # Ensure the frame itself expands to fill the master
         self.pack(fill="both", expand=True)
         # Create header with title
-        header = tk.Frame(self, bg="#4CAF50")
-        header.pack(fill="x")
-        tk.Label(header, text="Spiers New Technologies", font=("Roboto", 16, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(pady=15)
+       # header = tk.Frame(self, bg="#4CAF50")
+        header = tk.Frame(self, bg="#4CAF50", bd=0, relief="raised", highlightthickness=2, highlightbackground="#388E3C")
 
+    #    header.pack(fill="x")
+       # tk.Label(header, text="Spiers New Technologies", font=("Roboto", 16, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(pady=15)
+        header.pack(fill="x")
+
+# Create a frame inside header to hold word labels side by side
+        title_frame = tk.Frame(header, bg="#4CAF50")
+        title_frame.pack(pady=15)
+
+# Create separate Labels for each word
+        tk.Label(title_frame, text="Spiers", font=("Roboto", 16, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(side="left")
+        tk.Label(title_frame, text="New", font=("Roboto", 16, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(side="left")  # gold color
+        tk.Label(title_frame, text="Technologies", font=("Roboto", 16, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(side="left")  # cyan color
         # Create content frame
         content = tk.Frame(self, bg="#f0f0f0", bd=1, relief="solid")
         content.pack(pady=10, padx=10, fill="both", expand=True)

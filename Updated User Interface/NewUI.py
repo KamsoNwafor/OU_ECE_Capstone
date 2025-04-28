@@ -15,10 +15,16 @@ from NewItemPage import NewItemFrame
 from PicturePage import PictureFrame
 from EmotionSelectionPage import EmotionSelectionFrame
 from RequestPage import RequestFrame
+import os
+
 
 class App(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
+        # Load your custom icon
+        icon_path = os.path.join(os.path.dirname(__file__), "smalllogo.png")
+        self.iconphoto(False, tk.PhotoImage(file=icon_path))
+
         
         # Configure root window
         self.title("Spiers New Technologies")
@@ -144,6 +150,7 @@ class App(tk.Tk):
         frame = self.frames[cont]
         self.curr_frame = cont
         frame[1].tkraise()
+        self.canvas.yview_moveto(0) 
         self.canvas.configure(scrollregion=self.canvas.bbox("all"))
     
     def forward_button(self):
