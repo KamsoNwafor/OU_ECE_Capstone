@@ -38,6 +38,7 @@ class RequestFrame(tk.Frame):
 
         # Variables to write a report
         self.emotion = None
+        self.adjective = None  # New variable for the adjective
         self.report = tk.StringVar()
         self.report.set("")
         
@@ -149,6 +150,7 @@ class RequestFrame(tk.Frame):
         self.work_type_id = self.controller.selected_task_id
         self.user_id = self.controller.selected_user_id
         self.emotion = self.controller.selected_emotion
+        self.adjective = self.controller.selected_adjective  # Retrieve the adjective
 
         if self.controller.selected_state_id:
             self.state_id = self.controller.selected_state_id
@@ -224,7 +226,7 @@ class RequestFrame(tk.Frame):
                           + f"Part Number is {self.part_num}.\n"
                           + f"Item Type is {self.item_type}.\n"
                           + f"Location is {self.new_location}.\n"
-                          + f"Now {self.employee} is {self.emotion}")
+                          + f"Now {self.employee} is {self.emotion}, feeling that the task was {self.adjective}.")
             self.report.set(self.input_battery_report)
         else:
             self.input_battery_report = ""
@@ -233,26 +235,26 @@ class RequestFrame(tk.Frame):
             if self.work_type_id == "1":
                 self.report.set(self.input_battery_report
                               + f"{self.employee} found {self.battery_desc}.\n"
-                              + f"Now {self.employee} is {self.emotion}")
+                              + f"Now {self.employee} is {self.emotion}, feeling that the task was {self.adjective}.")
             elif self.work_type_id == "2":
                 self.report.set(self.input_battery_report
                               + f"{self.employee} received {self.battery_desc} from {self.client_status} {self.client}.\n"
                               + f"{self.battery_desc}'s state was {self.battery_state}.\n"
                               + f"Thus {self.employee} carried out the following actions:\n"
                               + f"{self.battery_actions}.\n"
-                              + f"Now {self.employee} is {self.emotion}.")
+                              + f"Now {self.employee} is {self.emotion}, feeling that the task was {self.adjective}.")
             elif self.work_type_id == "3":
                 self.report.set(self.input_battery_report
                               + f"{self.employee} shipped {self.battery_desc} to {self.client_status} {self.client}.\n"
-                              + f"Now {self.employee} is {self.emotion}.")
+                              + f"Now {self.employee} is {self.emotion}, feeling that the task was {self.adjective}.")
             elif self.work_type_id == "4":
                 self.report.set(self.input_battery_report
                               + f"{self.employee} moved {self.battery_desc} from {self.old_location} to {self.new_location}.\n"
-                              + f"Now {self.employee} is {self.emotion}.")
+                              + f"Now {self.employee} is {self.emotion}, feeling that the task was {self.adjective}.")
             elif self.work_type_id == "20":
                 self.report.set(self.input_battery_report
                               + f"{self.employee} took picture of {self.battery_desc}.\n"
-                              + f"Now {self.employee} is {self.emotion}.")
+                              + f"Now {self.employee} is {self.emotion}, feeling that the task was {self.adjective}.")
         
         self.report_text.delete("1.0", tk.END)  # Clear existing text
         self.report_text.insert("end", self.report.get())
@@ -272,8 +274,8 @@ class RequestFrame(tk.Frame):
         and self.picture):
             self.rds_cursor.execute("""
             UPDATE batteries
-            SET picture = ?
-            WHERE serial_number = ?
+            SET picture = %s
+            WHERE serial_number = %s
             """, (self.picture_data, self.serial_num))
 
             dbm.save_changes(self.rds_conn)
@@ -339,6 +341,7 @@ class RequestFrame(tk.Frame):
         self.item_type = None
 
         self.emotion = None
+        self.adjective = None  # Reset the adjective
         self.report = tk.StringVar()
         self.report.set("")
 

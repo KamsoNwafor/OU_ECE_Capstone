@@ -41,10 +41,16 @@ class ClientFrame(tk.Frame):
         # Create content frame
         content = tk.Frame(self, bg="#f0f0f0", bd=1, relief="solid")
         content.pack(pady=10, padx=10, fill="both", expand=True)
+        content.grid_columnconfigure(1, weight=1)  # Make column 1 expand
+        content.grid_rowconfigure(4, weight=1)  # Make row 4 (listbox) expand vertically
+
+        # Selected battery label (prompt)
+        self.battery_serial = tk.Label(content, font=("Roboto", 11), bg="#f0f0f0", fg="#333333")
+        self.battery_serial.grid(row=0, column=0, columnspan=3, pady=(10, 5))
 
         # creates a label asking for the client status and places this label in the top-left part of screen
         self.client_status = tk.Label(content, text="Customer or Supplier?", font=("Roboto", 12, "bold"), bg="#f0f0f0", fg="#212121")
-        self.client_status.grid(row=0, column=0, pady=(10, 5), sticky="w")
+        self.client_status.grid(row=1, column=0, columnspan=3, pady=(5, 5))
 
         # a variable to track whether the client is a supplier or a customer
         self.status = None
@@ -57,23 +63,26 @@ class ClientFrame(tk.Frame):
         self.status_list = tk.StringVar(self)
         self.status_list.set("0")
 
+        # Row tracker for dynamic placement
+        self.next_row = 2  # Start after client_status
+
         # creates a label asking for the client name and places this label in the centre-left part of screen
-        self.client_name = tk.Label(content, text="Who's the client?", font=("Roboto", 11), bg="#f0f0f0", fg="#333333")
-        self.client_name.grid(row=2, column=0, pady=5, sticky="w")
+        self.client_name = tk.Label(content, text="What kind?", font=("Roboto", 11), bg="#f0f0f0", fg="#333333")
+        self.client_name.grid(row=3, column=0, columnspan=3, pady=(10, 5))
 
         # creates text entry bar for client, places text entry bar to the right of "client Name" label
         # sets the text in entry bar to be an entry variable, and filters the drop-down list everytime a key is pressed
         self.client_bar = ttk.Entry(content, textvariable=self.client)
-        self.client_bar.grid(row=2, column=1, padx=5, pady=5, sticky="ew")
+        self.client_bar.grid(row=4, column=1, padx=5, pady=5, sticky="ew")
         self.client_bar.bind('<KeyRelease>', self.check_key)
 
         # creates scrollbar to manage there are many clients, puts scrollbar to the bottom-right of client text box
         self.client_scrollbar = ttk.Scrollbar(content, orient="vertical")
-        self.client_scrollbar.grid(row=3, column=2, padx=(0, 10), pady=10, sticky="ns")
+        self.client_scrollbar.grid(row=5, column=2, padx=(0, 10), pady=10, sticky="ns")
 
         # creates a box to show a filtered list of clients based on keyboard input, attaches list to scrollbar
         self.client_list = tk.Listbox(content, yscrollcommand=self.client_scrollbar.set, font=("Roboto", 11))
-        self.client_list.grid(row=3, column=1, padx=(10, 0), pady=10, sticky="ew")
+        self.client_list.grid(row=5, column=1, padx=(10, 0), pady=10, sticky="nsew")  # Stretch listbox both ways
 
         # attaches scrollbar to list
         self.client_scrollbar.config(command=self.client_list.yview)
@@ -161,17 +170,23 @@ class ClientFrame(tk.Frame):
 
         # Add radiobuttons to the content frame
         content = self.client_status.master  # Get the content frame (parent of client_status)
-        index = 1
+        index = self.next_row  # Start after client_status
         for status in self.status:
             # creates a single-selection list for each status
             self.status_option = ttk.Radiobutton(content, text=status[1], variable=self.status_list, value=status[0], command=lambda value=status[0]: self.load_client_list(value))
             # place the choices in the centre, one after the other
-            self.status_option.grid(row=index, column=0, padx=10, pady=5, sticky="w")
+            self.status_option.grid(row=index, column=0, columnspan=3, padx=10, pady=5, sticky="w")
             index += 1
+
+        # Update the rows for subsequent widgets
+        self.client_name.grid(row=index, column=0, columnspan=3, pady=(10, 5))
+        self.client_bar.grid(row=index+1, column=1, padx=5, pady=5, sticky="ew")
+        self.client_scrollbar.grid(row=index+2, column=2, padx=(0, 10), pady=10, sticky="ns")
+        self.client_list.grid(row=index+2, column=1, padx=(10, 0), pady=10, sticky="nsew")
 
         # Navigation buttons
         nav_frame = tk.Frame(content, bg="#f0f0f0")
-        nav_frame.grid(row=index, column=0, columnspan=3, pady=10)
+        nav_frame.grid(row=index+3, column=0, columnspan=3, pady=10)
 
         # button to go to the previous page (item selection page), places back button at the bottom left of screen
         self.back_button = ttk.Button(nav_frame, text="Back", style="Secondary.TButton", command=self.previous_page)
@@ -181,6 +196,17 @@ class ClientFrame(tk.Frame):
         # if a list item is highlighted, then the forward button is clicked, select it
         self.forward_button = ttk.Button(nav_frame, text="Forward", style="Primary.TButton", command=self.client_selection)
         self.forward_button.pack(side="left", padx=5)
+
+    def update_battery_info(self):
+        # Query the database for the selected battery's details
+        self.rds_cursor.execute("SELECT serial_number, part_description FROM batteries WHERE serial_number = %s", (self.controller.selected_battery_serial_number,))
+        result = self.rds_cursor.fetchall()
+        # Display the battery's serial number and part description
+        if result:
+            serial_num, part_desc = result[0]
+            self.battery_serial.config(text=f"Selected Battery: {serial_num} ({part_desc})")
+        else:
+            self.battery_serial.config(text=f"Selected Battery: {self.controller.selected_battery_serial_number or 'None'} (Not Found)")
 
     def previous_page(self):
         # loads previous page (item selection)
