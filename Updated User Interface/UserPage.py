@@ -47,21 +47,21 @@ class UserFrame(tk.Frame):
         content.grid_columnconfigure(2, weight=1)
 
         # Username label, same as the previous version but with smaller font (9 vs 11) for a more compact look.
-        self.user_name = tk.Label(content, text="Username:", font=("Roboto", 9), bg="#f0f0f0", fg="#333333")
-        self.user_name.grid(row=0, column=1, pady=(5, 3))  # Reduced padding compared to the previous version
+        self.user_name = tk.Label(content, text="Username:", font=("Roboto", 13), bg="#f0f0f0", fg="#333333")
+        self.user_name.grid(row=0, column=1, pady=(3, 2))  # Reduced padding compared to the previous version
 
         # Username entry, same functionality but without the external style mentioned in the previous version (TEntry in app.py).
         self.employee = tk.StringVar()
         self.employee.set("")
         self.name_bar = ttk.Entry(content, textvariable=self.employee)
-        self.name_bar.grid(row=1, column=1, pady=3, sticky="ew")  # NEW: sticky="ew" makes the entry expand horizontally, unlike the previous version
+        self.name_bar.grid(row=1, column=1, pady=2, sticky="ew")  # NEW: sticky="ew" makes the entry expand horizontally, unlike the previous version
         self.name_bar.bind('<KeyRelease>', self.check_key)  # Same key release binding to filter users
 
         # Scrollbar and listbox setup, similar to the previous version but with explicit size (height=3, width=20) for compactness.
         self.user_scrollbar = tk.Scrollbar(content, orient="vertical")
         self.user_scrollbar.grid(row=2, column=2, padx=(0, 5), pady=5, sticky="NS")  # Same vertical alignment as the previous version
 
-        self.user_list = tk.Listbox(content, yscrollcommand=self.user_scrollbar.set, font=("Roboto", 9), height=3, width=20)  # Smaller font and fixed size compared to the previous version's default size
+        self.user_list = tk.Listbox(content, yscrollcommand=self.user_scrollbar.set, font=("Roboto", 11), height=4, width=20)  # Smaller font and fixed size compared to the previous version's default size
         self.user_scrollbar.config(command=self.user_list.yview)
         self.user_list.bind("<Double-1>", self.user_selection)  # Same double-click binding as the previous version
         self.user_list.grid(row=2, column=1, padx=5, pady=5, sticky="ew")  # NEW: sticky="ew" for horizontal expansion, unlike the previous version
@@ -71,12 +71,12 @@ class UserFrame(tk.Frame):
         self.load_user_list()
 
         # Missing name instruction, same as the previous version but with smaller font (9 vs 11).
-        self.missing_name = tk.Label(content, text="If your name is not listed, please contact your supervisor", font=("Roboto", 9), bg="#f0f0f0", fg="#333333")
-        self.missing_name.grid(row=3, column=1, pady=3)  # Reduced padding compared to the previous version
+        self.missing_name = tk.Label(content, text="If your name is not listed, please contact your supervisor", font=("Roboto", 13), bg="#f0f0f0", fg="#333333")
+        self.missing_name.grid(row=3, column=1, pady=2)  # Reduced padding compared to the previous version
 
         # Navigation buttons frame, similar to the previous version but using grid for precise centering.
         nav_frame = tk.Frame(content, bg="#f0f0f0")
-        nav_frame.grid(row=4, column=0, columnspan=3, pady=5)
+        nav_frame.grid(row=4, column=0, columnspan=3, pady=1)
 
         # NEW: Configure nav_frame columns to center buttons (unlike the pack-based layout in the previous version).
         nav_frame.grid_columnconfigure(0, weight=1)

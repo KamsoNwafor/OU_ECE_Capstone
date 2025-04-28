@@ -22,9 +22,9 @@ class App(tk.Tk):
         
         # Configure root window
         self.title("Spiers New Technologies")
-        self.geometry("800x480")
+        self.geometry("770x480")
         self.configure(bg="#fafafa")
-        self.minsize(800, 480)
+        self.minsize(770, 480)
         self.resizable(True,True)
         
         # Configure styles to match the original SPIERS project
