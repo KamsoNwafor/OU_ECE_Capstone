@@ -106,7 +106,7 @@ class BatteryStateActionFrame(tk.Frame):
         index = 0
         for action_var in self.action_vars:
             if action_var.get() != 0:
-                self.checks[index].deselect()
+                action_var.set(0)
             index += 1
 
         for button in self.checks:
