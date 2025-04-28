@@ -101,9 +101,8 @@ class ItemSelectionFrame(tk.Frame):
     def battery_selection(self, event):
         # If trying new item intake (task ID 21)
         # Or none of the existing items in the list have been clicked
-        if (self.controller.selected_task_id != "21"
-            and (self.battery.get() in self.filtered_battery_ids
-            or self.battery_list.curselection())):
+        if (self.battery.get() in self.filtered_battery_ids
+            or self.battery_list.curselection()):
             if self.battery_list.curselection():
                 # Get the index of the selected battery
                 index = self.battery_list.curselection()[0]
