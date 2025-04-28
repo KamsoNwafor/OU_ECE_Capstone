@@ -100,4 +100,3 @@ if __name__ == "__main__":
     dbm.connect_rds()
     root = App()
     root.mainloop()
-
