@@ -7,81 +7,120 @@ class UserFrame(tk.Frame):
     frame_index = 1
 
     def __init__(self, master, controller):
-        tk.Frame.__init__(self, master, bg="#fafafa")  # Set soft background color
+        tk.Frame.__init__(self, master, bg="#fafafa")  # Same soft background color as the previous version
         self.controller = controller
 
-        self.rds_conn = dbm.get_rds_conn()  # Connect to RDS database
-        self.rds_cursor = self.rds_conn.cursor()  # Create cursor to search through RDS database
+        self.rds_conn = dbm.get_rds_conn()  # Same database connection setup as the previous version
+        self.rds_cursor = self.rds_conn.cursor()  # Same cursor for database queries
 
-        self.users = None  # Create a null variable to store the users
-        self.filtered_users = []  # Creates array to store filtered users in drop-down list
-        self.filtered_user_ids = []  # Creates array to store filtered user IDs
+        self.users = None  # Null variable for users, same as the previous version
+        self.filtered_users = []  # Array for filtered user names in the listbox
+        self.filtered_user_ids = []  # Array for corresponding user IDs
 
-        # Create header with title
+        # NEW: Prevent the frame from resizing based on its content (unlike the previous version, which used pack without this).
+        # This ensures better control over layout and keeps widgets centered.
+        self.pack_propagate(False)
+
+        # NEW: Configure the frame to expand and center content by assigning weight to row/column 0.
+        # This makes the UI responsive to window resizing, unlike the fixed grid in the previous version.
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+
+        # Same header frame with green background, but with smaller padding and font for a more compact design.
         header = tk.Frame(self, bg="#4CAF50")
-        header.pack(fill="x")
-        tk.Label(header, text="Step 2: User Selection", font=("Roboto", 14, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(pady=15)
+        header.pack(fill="x")  # Same horizontal fill as the previous version
+        tk.Label(header, text="Step 2: User Selection", font=("Roboto", 12, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(pady=10)  # Smaller font (12 vs 14) and padding (10 vs 15) than the previous version
 
-        # Create content frame
+        # Content frame is similar but with reduced padding (5 vs 10) for a tighter layout compared to the previous version.
         content = tk.Frame(self, bg="#f0f0f0", bd=1, relief="solid")
-        content.pack(pady=10, padx=10, fill="both", expand=True)
+        content.pack(pady=5, padx=5, fill="both", expand=True)  # Still expands like the previous version
 
-        # Username label
-        self.user_name = tk.Label(content, text="Username:", font=("Roboto", 11), bg="#f0f0f0", fg="#333333")
-        self.user_name.grid(row=0, column=1, pady=(10, 5))
+        # NEW: Configure content frame rows and columns to center widgets and make them responsive.
+        # This improves scaling compared to the fixed grid positions in the previous version.
+        content.grid_rowconfigure(0, weight=1)
+        content.grid_rowconfigure(1, weight=1)
+        content.grid_rowconfigure(2, weight=1)
+        content.grid_rowconfigure(3, weight=1)
+        content.grid_rowconfigure(4, weight=1)
+        content.grid_columnconfigure(0, weight=1)
+        content.grid_columnconfigure(1, weight=1)
+        content.grid_columnconfigure(2, weight=1)
 
-        # Username entry
+        # Username label, same as the previous version but with smaller font (9 vs 11) for a more compact look.
+        self.user_name = tk.Label(content, text="Username:", font=("Roboto", 9), bg="#f0f0f0", fg="#333333")
+        self.user_name.grid(row=0, column=1, pady=(5, 3))  # Reduced padding compared to the previous version
+
+        # Username entry, same functionality but without the external style mentioned in the previous version (TEntry in app.py).
         self.employee = tk.StringVar()
         self.employee.set("")
-        self.name_bar = ttk.Entry(content, textvariable=self.employee)  # Font is set via TEntry style in app.py
-        self.name_bar.grid(row=1, column=1, pady=5)
-        self.name_bar.bind('<KeyRelease>', self.check_key)  # Filters the list every time a key is pressed
+        self.name_bar = ttk.Entry(content, textvariable=self.employee)
+        self.name_bar.grid(row=1, column=1, pady=3, sticky="ew")  # NEW: sticky="ew" makes the entry expand horizontally, unlike the previous version
+        self.name_bar.bind('<KeyRelease>', self.check_key)  # Same key release binding to filter users
 
-        # User list with scrollbar
+        # Scrollbar and listbox setup, similar to the previous version but with explicit size (height=3, width=20) for compactness.
         self.user_scrollbar = tk.Scrollbar(content, orient="vertical")
-        self.user_scrollbar.grid(row=2, column=2, padx=(0, 10), pady=10, sticky="NS")
+        self.user_scrollbar.grid(row=2, column=2, padx=(0, 5), pady=5, sticky="NS")  # Same vertical alignment as the previous version
 
-        self.user_list = tk.Listbox(content, yscrollcommand=self.user_scrollbar.set, font=("Roboto", 11))
+        self.user_list = tk.Listbox(content, yscrollcommand=self.user_scrollbar.set, font=("Roboto", 9), height=3, width=20)  # Smaller font and fixed size compared to the previous version's default size
         self.user_scrollbar.config(command=self.user_list.yview)
-        self.user_list.bind("<Double-1>", self.user_selection)
-        self.user_list.grid(row=2, column=1, padx=10, pady=10)
-        self.list_update(self.filtered_users)  # Start with empty list
+        self.user_list.bind("<Double-1>", self.user_selection)  # Same double-click binding as the previous version
+        self.user_list.grid(row=2, column=1, padx=5, pady=5, sticky="ew")  # NEW: sticky="ew" for horizontal expansion, unlike the previous version
 
-        # Missing name instruction
-        self.missing_name = tk.Label(content, text="If your name is not listed, please contact your supervisor", font=("Roboto", 11), bg="#f0f0f0", fg="#333333")
-        self.missing_name.grid(row=3, column=1, pady=5)
+        # NEW: Load users from database immediately, but don't populate the listbox yet (unlike the previous version, which called list_update).
+        # This delays listbox population until the user types, reducing initial load time.
+        self.load_user_list()
 
-        # Navigation buttons
+        # Missing name instruction, same as the previous version but with smaller font (9 vs 11).
+        self.missing_name = tk.Label(content, text="If your name is not listed, please contact your supervisor", font=("Roboto", 9), bg="#f0f0f0", fg="#333333")
+        self.missing_name.grid(row=3, column=1, pady=3)  # Reduced padding compared to the previous version
+
+        # Navigation buttons frame, similar to the previous version but using grid for precise centering.
         nav_frame = tk.Frame(content, bg="#f0f0f0")
-        nav_frame.grid(row=4, column=0, columnspan=3, pady=10)
+        nav_frame.grid(row=4, column=0, columnspan=3, pady=5)
+
+        # NEW: Configure nav_frame columns to center buttons (unlike the pack-based layout in the previous version).
+        nav_frame.grid_columnconfigure(0, weight=1)
+        nav_frame.grid_columnconfigure(1, weight=1)
+        nav_frame.grid_columnconfigure(2, weight=1)
 
         self.back_button = ttk.Button(nav_frame, text="Back", style="Secondary.TButton", command=self.previous_page)
-        self.back_button.pack(side="left", padx=5)
+        self.back_button.grid(row=0, column=1, padx=3)  # Grid instead of pack for better alignment compared to the previous version
 
         self.forward_button = ttk.Button(nav_frame, text="Forward", style="Primary.TButton", command=lambda: self.user_selection(None))
-        self.forward_button.pack(side="left", padx=5)
+        self.forward_button.grid(row=0, column=2, padx=3)  # Grid for precise placement, unlike the previous version
 
     def check_key(self, event):
-        value = event.widget.get()  # Gets the text currently in the entry box
+        value = self.employee.get()
+        # NEW: Added print statement for debugging to track the entry value (not present in the previous version).
+        print(f"Entry value: {value}")
 
-        # If text is empty, empty the list
-        if value == '':
+        # NEW: Check if the users list is empty to avoid errors (the previous version assumed users was populated).
+        if not self.users:
+            print("Users list is empty")
+            self.filtered_users = []
+            self.filtered_user_ids = []
+        elif value == '':
             self.filtered_users = []
             self.filtered_user_ids = []
         else:
             self.filtered_users = []
             self.filtered_user_ids = []
             for item in self.users:
-                if value.lower() in f"{item[1]} {item[2]}".lower():
-                    self.filtered_users.append(f"{item[1]} {item[2]}")
+                full_name = f"{item[1]} {item[2]}"  # Same name filtering logic as the previous version
+                if value.lower() in full_name.lower():
+                    self.filtered_users.append(full_name)
                     self.filtered_user_ids.append(item[0])
 
-        self.list_update(self.filtered_users)
+        # NEW: Print filtered users for debugging (not in the previous version).
+        print(f"Filtered users: {self.filtered_users}")
+        self.list_update(self.filtered_users)  # Same list update call as the previous version
 
     def list_update(self, data):
         self.user_list.delete(0, 'end')
         for item in data:
             self.user_list.insert('end', item)
+        # NEW: Print to confirm listbox updates (not in the previous version).
+        print(f"Listbox updated with: {data}")
 
     def user_selection(self, event):
         if self.filtered_users and self.user_list.curselection():
@@ -94,14 +133,22 @@ class UserFrame(tk.Frame):
 
             self.controller.frames[2][1].update_user()
             self.controller.frames[2][1].load_correct_password()
-            self.controller.forward_button()
-
-            data = [self.chosen_user]
-            self.list_update(data)
+            # NEW: Explicitly navigate to PasswordFrame (index 2) instead of the previous version's forward_button().
+            # This ensures clear and predictable page transitions.
+            self.controller.show_page(2)  # Unlike the previous version, no list_update to keep the filtered list intact
 
     def load_user_list(self):
-        self.rds_cursor.execute("select user_id, first_name, last_name from employees")
-        self.users = self.rds_cursor.fetchall()
+        # NEW: Added try-except to handle database errors (the previous version had no error handling).
+        try:
+            # Same query as the previous version, but with uppercase SQL keywords for readability (functionally identical).
+            self.rds_cursor.execute("SELECT user_id, first_name, last_name FROM employees")
+            self.users = self.rds_cursor.fetchall()
+            # NEW: Print loaded users for debugging (not in the previous version).
+            print(f"Loaded users: {self.users}")
+        except Exception as e:
+            # NEW: Handle errors by setting users to an empty list and logging the issue.
+            print(f"Error loading users from database: {e}")
+            self.users = []
 
     def previous_page(self):
-        self.controller.show_page(0)
+        self.controller.show_page(0)  # Same as the previous version, navigates to the previous page

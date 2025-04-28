@@ -85,7 +85,7 @@ class BatteryStateFrame(tk.Frame):
         # the button saves the state id selected and goes to the next page when clicked
         self.forward_button = ttk.Button(nav_frame, text="Forward", style="Primary.TButton", command=self.manage_option)
         self.forward_button.pack(side="left", padx=5)
-
+#comment to test branching
     def previous_page(self):
         self.controller.show_page(6)
         self.controller.selected_state_id = None
