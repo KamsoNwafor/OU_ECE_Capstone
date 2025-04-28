@@ -78,7 +78,7 @@ class TaskSelectionFrame(tk.Frame):
             ORDER BY work_type_id;
             """)
             self.tasks = self.rds_cursor.fetchall()
-            print(f"Loaded tasks: {self.tasks}")
+             #print(f"Loaded tasks: {self.tasks}")
         except Exception as e:
             print(f"Error loading tasks from database: {e}")
             self.tasks = []

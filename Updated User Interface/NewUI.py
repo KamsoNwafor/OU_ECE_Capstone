@@ -19,6 +19,8 @@ import os
 
 
 class App(tk.Tk):
+    DEBUG_MODE = False  # Turn OFF debug mode
+
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
         # Load your custom icon
