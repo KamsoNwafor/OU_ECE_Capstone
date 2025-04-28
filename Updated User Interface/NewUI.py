@@ -25,11 +25,12 @@ class App(tk.Tk):
         self.geometry("800x480")
         self.configure(bg="#fafafa")
         self.minsize(800, 480)
+        self.resizable(True,True)
         
         # Configure styles to match the original SPIERS project
         self.style = ttk.Style()
         self.style.theme_use("clam")
-        self.style.configure("TButton", font=("Roboto", 11), padding=10)
+        self.style.configure("TButton", font=("Roboto", 14), padding=8)
         self.style.configure("Primary.TButton", background="#4CAF50", foreground="#FFFFFF")
         self.style.configure("Secondary.TButton", background="#B0BEC5", foreground="#000000")  # Updated to gray
         self.style.configure("Exit.TButton", background="#F44336", foreground="#FFFFFF")  # Added exit button style
@@ -44,6 +45,10 @@ class App(tk.Tk):
         # Creating a container frame to store all the page frames
         container = tk.Frame(self, bg="#fafafa")
         container.pack(fill=tk.BOTH, expand=True)
+        
+         # Configure container to center its content
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_columnconfigure(0, weight=1)
         
         # Initializing page frames to an empty array
         self.frames = []
@@ -81,6 +86,8 @@ class App(tk.Tk):
             frame.grid_columnconfigure(2, weight=1)
             frame.grid(row=0, column=0, sticky="nsew")
             
+               # Ensure each frame centers its content
+            frame.grid(row=0, column=0, sticky="nsew")
             index += 1
         
         self.show_page(0)

@@ -1,6 +1,3 @@
-
-
-
 import tkinter as tk
 from tkinter import ttk
 from Database import DatabaseManager as dbm
@@ -11,12 +8,14 @@ import os
 class StartFrame(tk.Frame):
     frame_index = 0
 
+        
     def __init__(self, master, controller):
         tk.Frame.__init__(self, master, bg="#fafafa")  # Set soft background color
         self.controller = controller
         self.bg_logo = None
         self.bg_label = None
-
+# Ensure the frame itself expands to fill the master
+        self.pack(fill="both", expand=True)
         # Create header with title
         header = tk.Frame(self, bg="#4CAF50")
         header.pack(fill="x")
@@ -30,8 +29,8 @@ class StartFrame(tk.Frame):
         self.setup_background(content)
 
         # Step indicator
-        self.step_label = tk.Label(content, text="Step 1 of 6", font=("Roboto", 12), bg="#f0f0f0", fg="#212121")
-        self.step_label.pack(pady=(10, 5))
+       # self.step_label = tk.Label(content, text="Step 1 of 6", font=("Roboto", 12), bg="#f0f0f0", fg="#212121")
+      #  self.step_label.pack(pady=(10, 5))
 
         # Main title in content frame
         self.start_label = tk.Label(content, text="Welcome to the SPIERS Smart System", font=("Roboto", 12, "bold"), bg="#f0f0f0", fg="#212121")
@@ -48,12 +47,12 @@ class StartFrame(tk.Frame):
     def setup_background(self, parent):
         try:
             # Assuming logo image is in the same directory as the script
-            logo_path = os.path.join(os.path.dirname(__file__), "logo.png")
+            logo_path = os.path.join(os.path.dirname(__file__), "logo.jpg")
 
             if os.path.exists(logo_path):
                 original = Image.open(logo_path)
                 faded = original.copy()
-                faded = faded.resize((600, 300))
+                faded = faded.resize((500, 200))
                 faded = faded.convert("RGBA")
                 alpha = faded.split()[3]
                 alpha = alpha.point(lambda p: p * 0.2)  # Make it faint
