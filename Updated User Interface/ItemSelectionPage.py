@@ -12,21 +12,20 @@ class ItemSelectionFrame(tk.Frame):
 
         # Connect to RDS database
         self.rds_conn = dbm.get_rds_conn()
-        # Create a cursor to execute queries on the RDS database
         self.rds_cursor = self.rds_conn.cursor()
 
         # Initialize variables for battery data
         self.batteries = None
         self.filtered_battery_ids = []
 
-        # Create header frame with a green background and title
+        # Header frame with a green background and title
         header = tk.Frame(self, bg="#4CAF50")
         header.pack(fill="x")
-        tk.Label(header, text="Step 3: Battery Selection", font=("Roboto", 14, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(pady=15)
+        tk.Label(header, text="Step 5: Battery Selection", font=("Roboto", 14, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(pady=10)
 
-        # Create content frame with a subtle border and light gray background
+        # Content frame with a subtle border and light gray background
         content = tk.Frame(self, bg="#f0f0f0", bd=1, relief="solid")
-        content.pack(pady=10, padx=10, fill="both", expand=True)
+        content.pack(pady=5, padx=5, fill="x", expand=False)
         content.grid_columnconfigure(1, weight=1)
 
         # Selected user label
@@ -37,97 +36,85 @@ class ItemSelectionFrame(tk.Frame):
         self.battery_name = tk.Label(content, text="Enter Battery Here, or Scan Barcode", font=("Roboto", 11), bg="#f0f0f0", fg="#333333")
         self.battery_name.grid(row=1, column=1, pady=(5, 5))
 
-        # Battery entry
+        # Battery entry box
         self.battery = tk.StringVar()
         self.battery.set("")
-        self.battery_bar = ttk.Entry(content, textvariable=self.battery)
-        self.battery_bar.grid(row=2, column=1, pady=5, sticky="")  # Added sticky="ew" to stretch horizontally
+        self.battery_bar = ttk.Entry(content, textvariable=self.battery, font=("Roboto", 13))  # Bigger text
+        self.battery_bar.grid(row=2, column=1, pady=4, ipady=4, sticky="ew")
         self.battery_bar.bind('<KeyRelease>', self.check_key)
 
-        # Battery list with scrollbar
+        # Battery list with scrollbar (smaller height)
         self.battery_scrollbar = tk.Scrollbar(content, orient="vertical")
-        self.battery_scrollbar.grid(row=3, column=2, padx=(0, 10), pady=10, sticky="NS")
+        self.battery_scrollbar.grid(row=3, column=2, padx=(0, 10), pady=(5, 5), sticky="NS")
 
-        self.battery_list = tk.Listbox(content, yscrollcommand=self.battery_scrollbar.set, font=("Roboto", 11))
+        self.battery_list = tk.Listbox(content, yscrollcommand=self.battery_scrollbar.set, font=("Roboto", 11), height=6)
         self.battery_scrollbar.config(command=self.battery_list.yview)
-        self.battery_list.grid(row=3, column=1, padx=10, pady=10, sticky="")
+        self.battery_list.grid(row=3, column=1, padx=10, pady=(5, 5), sticky="ew")
 
-        # self.battery_list.bind("<Double-1>", self.battery_selection)
-        # I removed the bind double-click because it shouldn't happen automatically. Only if we aren't intaking a new item
-
-        # Update with battery_ids
+        # Load any available battery IDs initially
         self.list_update(self.filtered_battery_ids)
 
         # Navigation buttons frame
         nav_frame = tk.Frame(content, bg="#f0f0f0")
-        nav_frame.grid(row=4, column=0, columnspan=3, pady=10)
+        nav_frame.grid(row=4, column=0, columnspan=3, pady=(8, 2))
 
-        # Back button to return to the previous page
+        nav_frame.grid_columnconfigure(0, weight=1)
+        nav_frame.grid_columnconfigure(1, weight=1)
+        nav_frame.grid_columnconfigure(2, weight=1)
+
+        # Back button
         self.back_button = ttk.Button(nav_frame, text="Back", style="Secondary.TButton", command=lambda: self.previous_page())
-        self.back_button.pack(side="left", padx=5)
+        self.back_button.grid(row=0, column=1, padx=5)
 
-        # Forward button to proceed with battery selection
+        # Forward button
         self.forward_button = ttk.Button(nav_frame, text="Forward", style="Primary.TButton", command=lambda: self.battery_selection(None))
-        self.forward_button.pack(side="left", padx=5)
+        self.forward_button.grid(row=0, column=2, padx=5)
 
     def check_key(self, event):
-        # Get the current text in the entry box
+        # Filter batteries based on the typed input
         value = event.widget.get()
-        # If the entry is empty, clear the filtered lists
         if value == '':
             self.filtered_battery_ids = []
         else:
-            # Filter batteries based on the entered text
             self.filtered_battery_ids = []
             for item in self.batteries:
                 if value.lower() in item[0].lower():
                     self.filtered_battery_ids.append(item[0])
-        # Update the listbox with filtered batteries
         self.list_update(self.filtered_battery_ids)
 
     def list_update(self, data):
-        # Clear the listbox
+        # Update the listbox with filtered batteries
         self.battery_list.delete(0, 'end')
-        # Populate the listbox with new data
         for item in data:
             self.battery_list.insert('end', item)
 
     def update_user(self):
-        # Query the database for the selected user's name
-        self.rds_cursor.execute("select first_name, last_name from employees where user_id = ?", (self.controller.selected_user_id,))
+        # Display the selected user's name
+        self.rds_cursor.execute("SELECT first_name, last_name FROM employees WHERE user_id = ?", (self.controller.selected_user_id,))
         result = self.rds_cursor.fetchall()
-        # Display the user's full name
         employee_name = f"{result[0][0]} {result[0][1]}"
         self.user_name.config(text=f"Selected User: {employee_name}")
 
     def battery_selection(self, event):
-        # If trying new item intake (task ID 21)
-        # Or none of the existing items in the list have been clicked
-        if (self.battery.get() in self.filtered_battery_ids
-            or self.battery_list.curselection()):
+        # Handle battery selection
+        if (self.battery.get() in self.filtered_battery_ids or self.battery_list.curselection()):
             if self.battery_list.curselection():
-                # Get the index of the selected battery
                 index = self.battery_list.curselection()[0]
-                # Update the entry field with the selected battery
                 for i in self.battery_list.curselection():
                     self.battery.set(self.battery_list.get(i))
-                # Store the selected battery's serial number
                 self.controller.selected_battery_serial_number = self.filtered_battery_ids[index]
             else:
                 self.controller.selected_battery_serial_number = self.battery.get()
-            # Navigate to the appropriate task page
             self.show_task_page()
-            # Update the list to show only the selected battery
             data = [self.controller.selected_battery_serial_number]
             self.list_update(data)
         else:
-            # For new item intake, store the entered description and navigate to the new item page
             self.controller.selected_battery_serial_number = self.battery.get()
             self.controller.frames[9][1].set_serial_num()
             self.controller.show_page(9)
 
     def show_task_page(self):
-        # Navigate to the appropriate page based on the selected task ID
+        # Navigate to the correct task page based on task ID
         if self.controller.selected_task_id == "1":
             self.controller.frames[5][1].find_item()
             self.controller.show_page(5)
@@ -143,16 +130,16 @@ class ItemSelectionFrame(tk.Frame):
             self.controller.show_page(8)
 
     def load_battery_list(self):
-        # Load all battery serial numbers and descriptions from the database
-        self.rds_cursor.execute("select serial_number, part_description from batteries")
+        # Load all batteries from the database
+        self.rds_cursor.execute("SELECT serial_number, part_description FROM batteries")
         self.batteries = self.rds_cursor.fetchall()
 
     def bind_double_click(self):
-        # Bind double-click to battery selection for tasks other than new item intake
+        # Enable double-click for selection if not in new item intake
         if self.controller.selected_task_id != "21":
             self.battery_list.bind("<Double-1>", self.battery_selection)
 
     def previous_page(self):
-        # Navigate back to the task selection page (index 3) and clear the selected task
+        # Navigate back to the Task Selection page
         self.controller.show_page(3)
         self.controller.selected_task_id = None
