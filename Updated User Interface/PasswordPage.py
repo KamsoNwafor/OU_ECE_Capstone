@@ -27,7 +27,7 @@ class PasswordFrame(tk.Frame):
         # Create header section with title
         header = tk.Frame(self, bg="#4CAF50")
         header.pack(fill="x")
-        tk.Label(header, text="Step 3: Password Entry", font=("Roboto", 14, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(pady=10)
+        tk.Label(header, text="Password Entry", font=("Roboto", 14, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(pady=10)
 
         # Create main content area
         content = tk.Frame(self, bg="#f0f0f0", bd=1, relief="solid")
@@ -45,7 +45,7 @@ class PasswordFrame(tk.Frame):
         self.user_name.grid(row=0, column=0, columnspan=2, pady=(10, 5))
 
         # Password label
-        self.user_password = tk.Label(content, text="Password:", font=("Roboto", 12), bg="#f0f0f0", fg="#333333")
+        self.user_password = tk.Label(content, text="Enter Your Password:", font=("Roboto", 12), bg="#f0f0f0", fg="#333333")
         self.user_password.grid(row=1, column=0, pady=5, sticky="e")
 
         # Password entry field (larger text and box)

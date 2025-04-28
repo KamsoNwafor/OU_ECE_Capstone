@@ -25,7 +25,7 @@ class TaskSelectionFrame(tk.Frame):
         # Create header section with title
         header = tk.Frame(self, bg="#4CAF50")
         header.pack(fill="x")
-        tk.Label(header, text="Step 4: Task Selection", font=("Roboto", 14, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(pady=10)
+        tk.Label(header, text="Task Selection", font=("Roboto", 14, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(pady=10)
 
         # Create main content area
         content = tk.Frame(self, bg="#f0f0f0", bd=1, relief="solid")
@@ -39,7 +39,7 @@ class TaskSelectionFrame(tk.Frame):
         content.grid_columnconfigure(1, weight=1)
 
         # Instruction label
-        self.task_label = tk.Label(content, text="Please select your task", font=("Roboto", 12, "bold"), bg="#f0f0f0", fg="#212121")
+        self.task_label = tk.Label(content, text="What Are You Trying To Do?", font=("Roboto", 12, "bold"), bg="#f0f0f0", fg="#212121")
         self.task_label.grid(row=0, column=0, columnspan=2, pady=(10, 5))
 
         # Setup for task selection
