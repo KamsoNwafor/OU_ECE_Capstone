@@ -83,4 +83,3 @@ class StartFrame(tk.Frame):
             else:
                 pass
 
-
