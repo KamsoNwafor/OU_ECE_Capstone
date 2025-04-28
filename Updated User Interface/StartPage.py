@@ -48,7 +48,7 @@ class StartFrame(tk.Frame):
     def setup_background(self, parent):
         try:
             # Assuming logo image is in the same directory as the script
-            logo_path = os.path.join(os.path.dirname(__file__), "spiers_logo.png")
+            logo_path = os.path.join(os.path.dirname(__file__), "logo.png")
 
             if os.path.exists(logo_path):
                 original = Image.open(logo_path)
