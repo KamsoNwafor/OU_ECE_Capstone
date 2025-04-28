@@ -97,8 +97,8 @@ class TaskSelectionFrame(tk.Frame):
         content = self.task_label.master
         index = 1
         for task in self.tasks:
-            self.task_option = ttk.Radiobutton(content, text=task[1], variable=self.task_list, value=task[0])
-            self.task_option.grid(row=index, column=0, padx=10, pady=5, sticky="w")  # Same placement and styling
+            self.task_option = ttk.Radiobutton(content, text=task[1], variable=self.task_list, value=task[0],)
+            self.task_option.grid(row=index, column=0, padx=10, pady=5)  # Same placement and styling
             index += 1
 
         # Navigation buttons frame, similar to the previous version but using grid for centering.

@@ -27,6 +27,7 @@ class ItemSelectionFrame(tk.Frame):
         # Create content frame with a subtle border and light gray background
         content = tk.Frame(self, bg="#f0f0f0", bd=1, relief="solid")
         content.pack(pady=10, padx=10, fill="both", expand=True)
+        content.grid_columnconfigure(1, weight=1)
 
         # Selected user label
         self.user_name = tk.Label(content, font=("Roboto", 11), bg="#f0f0f0", fg="#333333")
@@ -40,7 +41,7 @@ class ItemSelectionFrame(tk.Frame):
         self.battery = tk.StringVar()
         self.battery.set("")
         self.battery_bar = ttk.Entry(content, textvariable=self.battery)
-        self.battery_bar.grid(row=2, column=1, pady=5)
+        self.battery_bar.grid(row=2, column=1, pady=5, sticky="")  # Added sticky="ew" to stretch horizontally
         self.battery_bar.bind('<KeyRelease>', self.check_key)
 
         # Battery list with scrollbar
@@ -49,7 +50,8 @@ class ItemSelectionFrame(tk.Frame):
 
         self.battery_list = tk.Listbox(content, yscrollcommand=self.battery_scrollbar.set, font=("Roboto", 11))
         self.battery_scrollbar.config(command=self.battery_list.yview)
-        self.battery_list.grid(row=3, column=1, padx=10, pady=10)
+        self.battery_list.grid(row=3, column=1, padx=10, pady=10, sticky="")
+
         # self.battery_list.bind("<Double-1>", self.battery_selection)
         # I removed the bind double-click because it shouldn't happen automatically. Only if we aren't intaking a new item
 
