@@ -53,7 +53,7 @@ class MoveFrame(tk.Frame):
             content,
             yscrollcommand=lambda *args: self.location_scrollbar.set(*args),
             font=("Roboto", 11),
-            height=6  # Fixed height: 6 visible rows
+            height=4  # Fixed height: 6 visible rows
         )
         self.location_list.grid(row=2, column=1, padx=5, pady=5, sticky="ew")
         self.location_list.bind("<Double-1>", self.location_selection)
