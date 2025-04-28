@@ -82,3 +82,4 @@ class StartFrame(tk.Frame):
                 self.controller.forward_button()
             else:
                 pass
+
