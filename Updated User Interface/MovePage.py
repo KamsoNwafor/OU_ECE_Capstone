@@ -37,6 +37,8 @@ class MoveFrame(tk.Frame):
         # Create content frame
         content = tk.Frame(self, bg="#f0f0f0", bd=1, relief="solid")
         content.pack(pady=10, padx=10, fill="both", expand=True)
+        content.grid_columnconfigure(1, weight=1)  # Make column 1 expand
+        content.grid_rowconfigure(2, weight=1)  # Make row 2 (listbox) expand vertically
 
         # create label for current location
         self.old_location_label = tk.Label(content, font=("Roboto", 12, "bold"), bg="#f0f0f0", fg="#212121")
@@ -45,12 +47,12 @@ class MoveFrame(tk.Frame):
         # create label for new location
         self.new_location = None
         self.new_location_label = tk.Label(content, text="SELECT NEW LOCATION", font=("Roboto", 11), bg="#f0f0f0", fg="#333333")
-        self.new_location_label.grid(row=1, column=0, pady=5, sticky="w")
+        self.new_location_label.grid(row=1, column=0, pady=5, sticky="ew")  # Stretch label horizontally
 
         # creates text entry bar for location, places text entry bar to the right of "location Name" label
         # sets the text in entry bar to be an entry variable, and filters the drop-down list everytime a key is pressed
         self.location_bar = ttk.Entry(content, textvariable=self.location)
-        self.location_bar.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
+        self.location_bar.grid(row=1, column=1, padx=5, pady=5, sticky="")
         self.location_bar.bind('<KeyRelease>', self.check_key)
 
         # creates scrollbar to manage there are many locations, puts scrollbar to the bottom-right of location text box
@@ -59,7 +61,7 @@ class MoveFrame(tk.Frame):
 
         # creates a box to show a filtered list of locations based on keyboard input, attaches list to scrollbar
         self.location_list = tk.Listbox(content, yscrollcommand=self.location_scrollbar.set, font=("Roboto", 11))
-        self.location_list.grid(row=2, column=1, padx=(10, 0), pady=10, sticky="ew")
+        self.location_list.grid(row=2, column=1, padx=(10, 0), pady=10, sticky="")  # Stretch listbox both ways
 
         # attaches scrollbar to list
         self.location_scrollbar.config(command=self.location_list.yview)
@@ -157,7 +159,7 @@ class MoveFrame(tk.Frame):
         else:
             self.old_location = "No Location"
         
-        self.old_location_label.config (text =f"Current Location is: {self.old_location}")
+        self.old_location_label.config(text=f"Current Location is: {self.old_location}")
 
     def previous_page(self):
         self.controller.selected_battery_serial_number = None
