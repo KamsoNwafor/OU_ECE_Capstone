@@ -8,73 +8,68 @@ import os
 class StartFrame(tk.Frame):
     frame_index = 0
 
-        
     def __init__(self, master, controller):
-        tk.Frame.__init__(self, master, bg="#fafafa")  # Set soft background color
+        # Initialize the StartFrame with a light background
+        tk.Frame.__init__(self, master, bg="#fafafa")
         self.controller = controller
         self.bg_logo = None
         self.bg_label = None
-# Ensure the frame itself expands to fill the master
-        self.pack(fill="both", expand=True)
-        # Create header with title
-       # header = tk.Frame(self, bg="#4CAF50")
-        header = tk.Frame(self, bg="#4CAF50", bd=0, relief="raised", highlightthickness=2, highlightbackground="#388E3C")
 
-    #    header.pack(fill="x")
-       # tk.Label(header, text="Spiers New Technologies", font=("Roboto", 16, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(pady=15)
+        self.pack(fill="both", expand=True)
+
+        # Create a green header bar with highlighted border
+        header = tk.Frame(self, bg="#4CAF50", bd=0, relief="raised", highlightthickness=2, highlightbackground="#388E3C")
         header.pack(fill="x")
 
-# Create a frame inside header to hold word labels side by side
+        # Add the "Spiers New Technologies" title inside the header
         title_frame = tk.Frame(header, bg="#4CAF50")
-        title_frame.pack(pady=15)
+        title_frame.pack(pady=10)  # slightly reduced vertical space
 
-# Create separate Labels for each word
         tk.Label(title_frame, text="Spiers", font=("Roboto", 16, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(side="left")
-        tk.Label(title_frame, text="New", font=("Roboto", 16, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(side="left")  # gold color
-        tk.Label(title_frame, text="Technologies", font=("Roboto", 16, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(side="left")  # cyan color
-        # Create content frame
-        content = tk.Frame(self, bg="#f0f0f0", bd=1, relief="solid")
-        content.pack(pady=10, padx=10, fill="both", expand=True)
+        tk.Label(title_frame, text="New", font=("Roboto", 16, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(side="left")
+        tk.Label(title_frame, text="Technologies", font=("Roboto", 16, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(side="left")
 
-        # Load and place the background logo if it exists
+        # Create a main content frame below the header
+        content = tk.Frame(self, bg="#f0f0f0", bd=1, relief="solid")
+        content.pack(pady=(5, 10), padx=10, fill="both", expand=True)
+
+        # Load and set a faint background logo
         self.setup_background(content)
 
-        # Step indicator
-       # self.step_label = tk.Label(content, text="Step 1 of 6", font=("Roboto", 12), bg="#f0f0f0", fg="#212121")
-      #  self.step_label.pack(pady=(10, 5))
-
-        # Main title in content frame
-        self.start_label = tk.Label(content, text="Welcome to the SPIERS Smart System", font=("Roboto", 12, "bold"), bg="#f0f0f0", fg="#212121")
+        # Add welcome message
+        self.start_label = tk.Label(content, text="Welcome to the SPIERS Smart System",
+                                    font=("Roboto", 12, "bold"), bg="#f0f0f0", fg="#212121")
         self.start_label.pack(pady=(5, 10))
 
-        # Navigation buttons frame
+        # Create a frame for navigation buttons
         nav_frame = tk.Frame(content, bg="#f0f0f0")
-        nav_frame.pack(pady=10)
+        nav_frame.pack(pady=5)
 
-        # Start Button
+        # Start button to proceed
         self.start_button = ttk.Button(nav_frame, text="Start", style="Primary.TButton", command=self.manage_connection_status)
         self.start_button.pack(side="left", padx=5)
 
     def setup_background(self, parent):
+        """Load and place a faded logo in the background."""
         try:
-            # Assuming logo image is in the same directory as the script
             logo_path = os.path.join(os.path.dirname(__file__), "logo.jpg")
-
             if os.path.exists(logo_path):
                 original = Image.open(logo_path)
-                faded = original.copy()
-                faded = faded.resize((500, 200))
+                faded = original.resize((500, 180))  # slightly reduced height for better balance
                 faded = faded.convert("RGBA")
+
                 alpha = faded.split()[3]
-                alpha = alpha.point(lambda p: p * 0.2)  # Make it faint
+                alpha = alpha.point(lambda p: p * 0.2)  # Apply transparency
                 self.bg_logo = ImageTk.PhotoImage(faded)
 
+                # Center the faded logo slightly higher
                 self.bg_label = tk.Label(parent, image=self.bg_logo, bg="#f0f0f0")
-                self.bg_label.place(relx=0.5, rely=0.5, anchor='center')
+                self.bg_label.place(relx=0.5, rely=0.45, anchor='center')
         except Exception as e:
             print(f"Background logo setup failed: {e}")
 
     def manage_connection_status(self):
+        """Check database connection and proceed if successful."""
         rds_conn = dbm.get_rds_conn()
         connection_status = False
 
@@ -86,11 +81,8 @@ class StartFrame(tk.Frame):
         except Error as e:
             print("Connection lost or failed.")
             connection_status = False
-
         finally:
             if connection_status:
                 self.controller.forward_button()
             else:
                 pass
-
-
