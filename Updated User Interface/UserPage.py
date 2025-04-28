@@ -52,7 +52,7 @@ class UserFrame(tk.Frame):
         self.employee = tk.StringVar()
         self.employee.set("")
         self.name_bar = ttk.Entry(content, textvariable=self.employee, font=("Roboto", 14))  # Bigger font
-        self.name_bar.grid(row=1, column=1, pady=2,ipady = 4, sticky="ew")
+        self.name_bar.grid(row=1, column=1, pady=2, ipady=4, sticky="ew")
         self.name_bar.bind('<KeyRelease>', self.check_key)
 
         # Create Listbox with vertical scrollbar
@@ -89,10 +89,8 @@ class UserFrame(tk.Frame):
     def check_key(self, event):
         # Filter the list of users based on typed input
         value = self.employee.get()
-      #  print(f"Entry value: {value}")
 
         if not self.users:
-            print("Users list is empty")
             self.filtered_users = []
             self.filtered_user_ids = []
         elif value == '':
@@ -107,7 +105,6 @@ class UserFrame(tk.Frame):
                     self.filtered_users.append(full_name)
                     self.filtered_user_ids.append(item[0])
 
-      #  print(f"Filtered users: {self.filtered_users}")
         self.list_update(self.filtered_users)
 
     def list_update(self, data):
@@ -115,7 +112,6 @@ class UserFrame(tk.Frame):
         self.user_list.delete(0, 'end')
         for item in data:
             self.user_list.insert('end', item)
-      #  print(f"Listbox updated with: {data}")
 
     def user_selection(self, event):
         # Handle user selection and navigate to the next page
@@ -136,11 +132,19 @@ class UserFrame(tk.Frame):
         try:
             self.rds_cursor.execute("SELECT user_id, first_name, last_name FROM employees")
             self.users = self.rds_cursor.fetchall()
-          #  print(f"Loaded users: {self.users}")
         except Exception as e:
-        #    print(f"Error loading users from database: {e}")
             self.users = []
 
     def previous_page(self):
         # Navigate back to the previous page
         self.controller.show_page(0)
+
+    def reset_frame(self):
+        """Reset UserFrame widgets to initial state."""
+        try:
+            self.employee.set("")  # Clear search box
+            self.user_list.delete(0, 'end')  # Clear the listbox
+            self.filtered_users = []  # Reset the filtered lists
+            self.filtered_user_ids = []
+        except Exception as e:
+            print(f"UserFrame reset failed: {e}")

@@ -86,3 +86,12 @@ class StartFrame(tk.Frame):
                 self.controller.forward_button()
             else:
                 pass
+
+    def reset_frame(self):
+        """Reset StartFrame widgets to initial state."""
+        try:
+            self.start_label.config(text="Welcome to the SPIERS Smart System")  # Reset welcome message
+            if self.bg_label:
+                self.bg_label.lift()  # Make sure background logo is still visible
+        except Exception as e:
+            print(f"StartFrame reset failed: {e}")
