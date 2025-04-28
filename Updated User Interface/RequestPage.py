@@ -58,7 +58,7 @@ class RequestFrame(tk.Frame):
         self.report_label.grid(row=0, column=0, pady=(10, 5))
 
         # Text Area (Reduced Height)
-        self.report_text = tk.Text(content, height= 8, wrap=tk.WORD, font=("Roboto", 11))
+        self.report_text = tk.Text(content, height=8, wrap=tk.WORD, font=("Roboto", 11))
         self.report_text.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
 
         # Navigation Buttons
@@ -66,12 +66,20 @@ class RequestFrame(tk.Frame):
         nav_frame.grid(row=2, column=0, pady=10)
         nav_frame.grid_columnconfigure(0, weight=1)
         nav_frame.grid_columnconfigure(1, weight=1)
+        nav_frame.grid_columnconfigure(2, weight=1)
+        nav_frame.grid_columnconfigure(3, weight=1)
 
         self.back_button = ttk.Button(nav_frame, text="Back", style="Secondary.TButton", command=self.previous_page)
         self.back_button.grid(row=0, column=0, padx=5)
 
         self.submit_button = ttk.Button(nav_frame, text="Confirm", style="Primary.TButton", command=self.complete_report)
         self.submit_button.grid(row=0, column=1, padx=5)
+
+        self.start_new_button = ttk.Button(nav_frame, text="Start New Operation", style="Primary.TButton", command=self.start_new_operation)
+        self.start_new_button.grid(row=0, column=2, padx=5)
+
+        self.exit_button = ttk.Button(nav_frame, text="Exit", style="Secondary.TButton", command=self.exit_application)
+        self.exit_button.grid(row=0, column=3, padx=5)
 
     def setup_report_sheet_headers(self):
         """Create headers for the Excel sheet if not present."""
@@ -87,18 +95,43 @@ class RequestFrame(tk.Frame):
             self.report_title_cell.value = "Report"
 
     def complete_report(self):
-        """Submit final report."""
-        self.submit_request()
-        self.submit_report()
-        self.wb.save(self.workbook_title)
-        messagebox.showinfo("Success", "Report Submitted Successfully!")
-        self.controller.destroy()
+        """
+        Submit final report without validating fields.
+        Saves the report to Excel, shows a success message, and resets the frame
+        for reuse without closing the application.
+        """
+        self.submit_request()  # Call placeholder for database submission
+        self.submit_report()  # Save report data to Excel
+        self.wb.save(self.workbook_title)  # Save the workbook
+        messagebox.showinfo("Success", "Report Submitted Successfully!")  # Notify user
+        self.report_text.delete("1.0", tk.END)  # Clear the report text area
+        self.reset_report()  # Reset frame variables for reuse
 
     def previous_page(self):
         """Go back to the previous page and clear the report."""
         self.controller.back_button()
         self.report_text.delete("1.0", tk.END)
         self.reset_report()
+
+    def start_new_operation(self):
+        """
+        Reset the current frame and restart the application.
+        Clears the report text and frame variables, then calls reset_application
+        to clear all controller variables (e.g., selected_user_id) and navigate
+        to StartFrame, ensuring UserFrame and PasswordFrame start with blank fields.
+        """
+        self.report_text.delete("1.0", tk.END)  # Clear the report text area
+        self.reset_report()  # Reset RequestFrame variables
+        try:
+            self.controller.reset_application()  # Reset controller state and navigate to StartFrame
+        except AttributeError:
+            # Fallback in case reset_application is not available
+            messagebox.showerror("Error", "Controller does not support reset_application. Falling back to show_page.")
+            self.controller.show_page(0)
+
+    def exit_application(self):
+        """Close the application."""
+        self.controller.destroy()
 
     def load_report(self):
         """Load all user input data to create the report."""
