@@ -1,0 +1,17 @@
+Running Through Terminal on Raspberry Pi (if no App Built):
+
+Step 1: source "/myvenv/bin/activate"
+Step 2: cd "/OU_ECE_Capstone"
+
+-----------------
+if there are important files, DO NOT run the steps between the dashes
+
+Step 3: git reset --hard
+Step 4: git clean -fd
+
+-----------------
+
+Step 5: git pull
+Step 6: python "Updated User Interface/NewUI.py"
+
+Press up or down arrow keys to navigate the terminal's input command history.
