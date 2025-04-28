@@ -22,9 +22,9 @@ class App(tk.Tk):
         
         # Configure root window
         self.title("Spiers New Technologies")
-        self.geometry("800x480")
+        self.geometry("400x240")
         self.configure(bg="#fafafa")
-        self.minsize(800, 480)
+        self.minsize(400, 240)
         
         # Configure styles to match the original SPIERS project
         self.style = ttk.Style()
@@ -100,3 +100,6 @@ if __name__ == "__main__":
     dbm.connect_rds()
     root = App()
     root.mainloop()
+
+
+
