@@ -22,9 +22,9 @@ class App(tk.Tk):
         
         # Configure root window
         self.title("Spiers New Technologies")
-        self.geometry("400x240")
+        self.geometry("800x480")
         self.configure(bg="#fafafa")
-        self.minsize(400, 240)
+        self.minsize(800, 480)
         
         # Configure styles to match the original SPIERS project
         self.style = ttk.Style()
