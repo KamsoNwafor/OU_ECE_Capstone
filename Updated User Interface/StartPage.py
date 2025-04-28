@@ -1,3 +1,6 @@
+
+
+
 import tkinter as tk
 from tkinter import ttk
 from Database import DatabaseManager as dbm
@@ -79,3 +82,5 @@ class StartFrame(tk.Frame):
                 self.controller.forward_button()
             else:
                 pass
+
+
