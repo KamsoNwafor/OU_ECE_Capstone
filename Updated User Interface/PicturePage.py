@@ -4,47 +4,48 @@ from tkinter import ttk
 from PIL import ImageTk, Image
 import cv2
 from Database import DatabaseManager as dbm
+import tkinter.messagebox as messagebox  # For popup
 
 class PictureFrame(tk.Frame):
     frame_index = 8
 
     def __init__(self, master, controller):
-        tk.Frame.__init__(self, master, bg="#fafafa")  # Set soft background color
+        # Initialize frame with soft background
+        tk.Frame.__init__(self, master, bg="#fafafa")
+        self.controller = controller
 
         # Connect to RDS database
         self.rds_conn = dbm.get_rds_conn()
-        # Create a cursor to execute queries on the RDS database
         self.rds_cursor = self.rds_conn.cursor()
 
-        self.controller = controller
+        # Camera and image variables
         self.cam = None
         self.ret = None
         self.frame = None
         self.frame_rgb = None
         self.filename = "captured_photo.jpg"
 
-        # Flag to indicate when to capture the image
-        self.capture = False
-
+        self.capture = False  # Flag to trigger capture
         self.image = None
         self.image_tk = None
         self.max_width = math.floor(800 / 3)
         self.max_height = math.floor(480 / 3)
-        
-        # Create header with title
+
+        # Header
         header = tk.Frame(self, bg="#4CAF50")
         header.pack(fill="x")
-        tk.Label(header, text="Step 5: Take Picture", font=("Roboto", 14, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(pady=15)
+        tk.Label(header, text="Step 5: Take Picture", font=("Roboto", 14, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(pady=10)
 
-        # Create content frame
+        # Main content
         content = tk.Frame(self, bg="#f0f0f0", bd=1, relief="solid")
-        content.pack(pady=10, padx=10, fill="both", expand=True)
+        content.pack(padx=5, pady=5, fill="both", expand=True)
 
         # Instruction label
-        self.instruction = tk.Label(content, text="Please touch the screen when you're ready to take the picture", font=("Roboto", 12, "bold"), bg="#f0f0f0", fg="#212121")
+        self.instruction = tk.Label(content, text="Please touch the screen when you're ready to take the picture",
+                                    font=("Roboto", 12, "bold"), bg="#f0f0f0", fg="#212121")
         self.instruction.grid(row=0, column=0, padx=10, pady=(10, 5), sticky="news")
 
-        # Image label
+        # Image preview label
         self.image_label = tk.Label(content, bg="#f0f0f0")
         self.image_label.grid(row=1, column=0, padx=10, pady=10, sticky="news")
         self.image_label.bind("<Button-1>", self.capture_on_click)
@@ -63,12 +64,35 @@ class PictureFrame(tk.Frame):
         self.forward_button.pack(side="left", padx=5)
 
     def image_preview(self):
+        # Start camera preview or handle missing camera
         self.capture = False
-        self.open_camera()
-        self.show_preview()
+        if not self.open_camera():
+            print("Camera not available. Proceeding without picture.")
+
+            # Show friendly popup
+            messagebox.showinfo("Camera Not Available", "Camera is not available.\nProceeding without a picture...")
+
+            # After 2 seconds, proceed automatically
+            self.after(2000, self.next_page)
+        else:
+            self.show_preview()
+
+    def open_camera(self):
+        # Attempt to open the default camera
+        cam_port = 0
+        self.cam = cv2.VideoCapture(cam_port)
+
+        if not self.cam.isOpened():
+            return False  # Camera not available
+        else:
+            # Configure camera resolution
+            self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, self.max_width)
+            self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, self.max_height)
+            return True
 
     def show_preview(self):
-        if self.cam.isOpened():
+        # Display live camera feed
+        if self.cam and self.cam.isOpened():
             self.ret, self.frame = self.cam.read()
             if self.ret:
                 self.frame = cv2.resize(self.frame, (self.max_width * 2, self.max_height * 2))
@@ -83,29 +107,26 @@ class PictureFrame(tk.Frame):
                     self.save_image()
                     self.cam.release()
 
-    def open_camera(self):
-        cam_port = 0
-        self.cam = cv2.VideoCapture(cam_port)
-        self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, self.max_width)
-        self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, self.max_height)
-
     def capture_on_click(self, event):
+        # Trigger capture when screen is touched
         self.capture = True
 
     def save_image(self):
+        # Save captured frame to file
         if self.frame is not None:
             cv2.imwrite(self.filename, self.frame)
             print(f"Image saved as {self.filename}")
             self.controller.selected_picture = Image.open(self.filename)
 
     def previous_page(self):
-        self.cam.release()
+        # Navigate to appropriate previous page
+        if self.cam and self.cam.isOpened():
+            self.cam.release()
 
-        self.rds_cursor.execute("select * from batteries where serial_number = ?", (self.controller.selected_battery_serial_number,))
+        self.rds_cursor.execute("SELECT * FROM batteries WHERE serial_number = ?", (self.controller.selected_battery_serial_number,))
         result = self.rds_cursor.fetchall()
 
         if not result:
-            # go back to move page for intaking new batteries
             self.controller.show_page(7)
         else:
             if self.controller.selected_task_id == "2":
@@ -121,8 +142,9 @@ class PictureFrame(tk.Frame):
                 self.controller.show_page(4)
                 self.controller.selected_battery_serial_number = None
 
-
     def next_page(self):
-        if not self.cam.isOpened():
-            self.controller.frames[-2][1].update_emotion_list()
-            self.controller.show_page(-2)
+        # Move to the emotion selection page
+        if self.cam and self.cam.isOpened():
+            self.cam.release()
+        self.controller.frames[-2][1].update_emotion_list()
+        self.controller.show_page(-2)
