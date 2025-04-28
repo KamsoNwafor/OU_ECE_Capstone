@@ -21,7 +21,7 @@ class EmotionSelectionFrame(tk.Frame):
         # Create header
         header = tk.Frame(self, bg="#4CAF50")
         header.pack(fill="x")
-        tk.Label(header, text="Emotion Selection", font=("Roboto", 14, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(pady=10)
+        tk.Label(header, text="Emotions", font=("Roboto", 14, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(pady=10)
 
         # Create content area
         content = tk.Frame(self, bg="#f0f0f0", bd=1, relief="solid")
@@ -79,7 +79,7 @@ class EmotionSelectionFrame(tk.Frame):
         content = self.mad_libs_label.master
 
         # Emotion label
-        emotion_label = tk.Label(content, text="Choose your emotion:", font=("Roboto", 12, "bold"), bg="#f0f0f0", fg="#212121")
+        emotion_label = tk.Label(content, text="How Are You Feeling?:", font=("Roboto", 12, "bold"), bg="#f0f0f0", fg="#212121")
         emotion_label.grid(row=1, column=0, columnspan=2, pady=(5, 5))
 
         # Emotions in two columns
@@ -94,7 +94,7 @@ class EmotionSelectionFrame(tk.Frame):
         max_row = (split_point if len(self.emotions) % 2 == 0 else split_point) + 2
 
         # Adjective label
-        adjective_label = tk.Label(content, text="Choose an adjective:", font=("Roboto", 12, "bold"), bg="#f0f0f0", fg="#212121")
+        adjective_label = tk.Label(content, text="Why Do You Feel Like That?", font=("Roboto", 12, "bold"), bg="#f0f0f0", fg="#212121")
         adjective_label.grid(row=max_row, column=0, columnspan=2, pady=(10, 5))
 
         # Adjectives in two columns

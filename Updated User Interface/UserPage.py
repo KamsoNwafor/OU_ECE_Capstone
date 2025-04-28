@@ -89,7 +89,7 @@ class UserFrame(tk.Frame):
     def check_key(self, event):
         # Filter the list of users based on typed input
         value = self.employee.get()
-        print(f"Entry value: {value}")
+      #  print(f"Entry value: {value}")
 
         if not self.users:
             print("Users list is empty")
@@ -107,7 +107,7 @@ class UserFrame(tk.Frame):
                     self.filtered_users.append(full_name)
                     self.filtered_user_ids.append(item[0])
 
-        print(f"Filtered users: {self.filtered_users}")
+      #  print(f"Filtered users: {self.filtered_users}")
         self.list_update(self.filtered_users)
 
     def list_update(self, data):
@@ -115,7 +115,7 @@ class UserFrame(tk.Frame):
         self.user_list.delete(0, 'end')
         for item in data:
             self.user_list.insert('end', item)
-        print(f"Listbox updated with: {data}")
+      #  print(f"Listbox updated with: {data}")
 
     def user_selection(self, event):
         # Handle user selection and navigate to the next page
@@ -136,9 +136,9 @@ class UserFrame(tk.Frame):
         try:
             self.rds_cursor.execute("SELECT user_id, first_name, last_name FROM employees")
             self.users = self.rds_cursor.fetchall()
-            print(f"Loaded users: {self.users}")
+          #  print(f"Loaded users: {self.users}")
         except Exception as e:
-            print(f"Error loading users from database: {e}")
+        #    print(f"Error loading users from database: {e}")
             self.users = []
 
     def previous_page(self):

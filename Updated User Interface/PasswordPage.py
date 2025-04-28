@@ -27,7 +27,7 @@ class PasswordFrame(tk.Frame):
         # Create header section with title
         header = tk.Frame(self, bg="#4CAF50")
         header.pack(fill="x")
-        tk.Label(header, text="Password Entry", font=("Roboto", 14, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(pady=10)
+        tk.Label(header, text="User Authentication", font=("Roboto", 14, "bold"), bg="#4CAF50", fg="#FFFFFF").pack(pady=10)
 
         # Create main content area
         content = tk.Frame(self, bg="#f0f0f0", bd=1, relief="solid")
@@ -108,7 +108,7 @@ class PasswordFrame(tk.Frame):
             self.password_tuple = self.rds_cursor.fetchall()
             if self.password_tuple:
                 self.correct_password = self.password_tuple[0][0]
-                print(f"Loaded password for user_id {self.controller.selected_user_id}: {self.correct_password}")
+               # print(f"Loaded password for user_id {self.controller.selected_user_id}: {self.correct_password}")
             else:
                 print("No password found for user_id:", self.controller.selected_user_id)
         except Exception as e:
